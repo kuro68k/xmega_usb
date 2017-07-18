@@ -17,7 +17,7 @@ const USB_DeviceDescriptor PROGMEM device_descriptor = {
 	.bDescriptorType = USB_DTYPE_Device,
 
 	.bcdUSB                 = 0x0200,
-	.bDeviceClass           = 0, //USB_CSCP_VendorSpecificClass,
+	.bDeviceClass           = USB_CSCP_VendorSpecificClass,
 	.bDeviceSubClass        = USB_CSCP_NoDeviceSubclass,
 	.bDeviceProtocol        = USB_CSCP_NoDeviceProtocol,
 
