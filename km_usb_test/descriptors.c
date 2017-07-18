@@ -6,6 +6,7 @@
 // Fill in msft_extended for WCID
 // WCID request ID can be changed below
 // Other options in usb.h
+// Additional compiler flags: -std=gnu99 -fno-strict-aliasing -Wstrict-prototypes -fno-jump-tables
 
 #define WCID_REQUEST_ID			0x22
 #define WCID_REQUEST_ID_STR		u"\x22"
