@@ -141,7 +141,7 @@ __attribute__((__aligned__(4))) const USB_MicrosoftExtendedPropertiesDescriptor 
 	.dwDataLength = 78,
 	.data = L"{42314231-5A81-49F0-BC3D-A4FF138216D7}\0",
 
-	.dwPropLength2 = 14 + 12 + 26,
+	.dwPropLength2 = 14 + (6*2) + (13*2),
 	.dwType2 = 1,
 	.wNameLength2 = 6*2,
 	.name2 = L"Label\0",
