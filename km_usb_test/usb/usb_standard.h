@@ -70,11 +70,11 @@ enum {
 } USB_dtype;
 
 typedef enum {
-	USB_CSCP_NoDeviceClass = 0x00, 
-	USB_CSCP_NoDeviceSubclass = 0x00, 
-	USB_CSCP_NoDeviceProtocol = 0x00, 
+	USB_CSCP_NoDeviceClass = 0x00,
+	USB_CSCP_NoDeviceSubclass = 0x00,
+	USB_CSCP_NoDeviceProtocol = 0x00,
 	USB_CSCP_VendorSpecificClass = 0xFF,
-	USB_CSCP_VendorSpecificSubclass = 0xFF, 
+	USB_CSCP_VendorSpecificSubclass = 0xFF,
 	USB_CSCP_VendorSpecificProtocol = 0xFF,
 	USB_CSCP_IADDeviceClass = 0xEF,
 	USB_CSCP_IADDeviceSubclass = 0x02,
@@ -108,21 +108,21 @@ typedef enum {
 #define USB_EP_TYPE_INTERRUPT 0x03
 
 typedef struct {
-	uint8_t bLength; 
+	uint8_t bLength;
 	uint8_t bDescriptorType;
 } __attribute__ ((packed)) USB_DescriptorHeader;
 
 typedef struct {
-	uint8_t bLength; 
+	uint8_t bLength;
 	uint8_t bDescriptorType;
-	uint16_t bcdUSB; 
-	uint8_t bDeviceClass; 
-	uint8_t bDeviceSubClass; 
-	uint8_t bDeviceProtocol; 
-	uint8_t bMaxPacketSize0; 
-	uint16_t idVendor; 
-	uint16_t idProduct; 
-	uint16_t bcdDevice; 
+	uint16_t bcdUSB;
+	uint8_t bDeviceClass;
+	uint8_t bDeviceSubClass;
+	uint8_t bDeviceProtocol;
+	uint8_t bMaxPacketSize0;
+	uint16_t idVendor;
+	uint16_t idProduct;
+	uint16_t bcdDevice;
 	uint8_t iManufacturer;
 	uint8_t iProduct;
 	uint8_t iSerialNumber;
@@ -130,46 +130,46 @@ typedef struct {
 } __attribute__ ((packed)) USB_DeviceDescriptor;
 
 typedef struct {
-	uint8_t bLength; 
-	uint8_t bDescriptorType; 
-	uint16_t bcdUSB; 
-	uint8_t bDeviceSubClass; 
+	uint8_t bLength;
+	uint8_t bDescriptorType;
+	uint16_t bcdUSB;
+	uint8_t bDeviceSubClass;
 	uint8_t bMaxPacketSize0;
 	uint8_t bNumConfigurations;
 	uint8_t bReserved;
 } __attribute__ ((packed)) USB_DeviceQualifierDescriptor;
 
 typedef struct {
-	uint8_t bLength; 
+	uint8_t bLength;
 	uint8_t bDescriptorType;
 	uint16_t wTotalLength;
-	uint8_t bNumInterfaces; 
-	uint8_t bConfigurationValue; 
-	uint8_t iConfiguration; 
+	uint8_t bNumInterfaces;
+	uint8_t bConfigurationValue;
+	uint8_t iConfiguration;
 	uint8_t bmAttributes;
 	uint8_t bMaxPower;
 } __attribute__ ((packed)) USB_ConfigurationDescriptor;
 
 typedef struct {
-	uint8_t bLength; 
+	uint8_t bLength;
 	uint8_t bDescriptorType;
-	uint8_t bInterfaceNumber; 
-	uint8_t bAlternateSetting; 
-	uint8_t bNumEndpoints; 
-	uint8_t bInterfaceClass; 
-	uint8_t bInterfaceSubClass; 
-	uint8_t bInterfaceProtocol; 
+	uint8_t bInterfaceNumber;
+	uint8_t bAlternateSetting;
+	uint8_t bNumEndpoints;
+	uint8_t bInterfaceClass;
+	uint8_t bInterfaceSubClass;
+	uint8_t bInterfaceProtocol;
 	uint8_t iInterface;
 } __attribute__ ((packed)) USB_InterfaceDescriptor;
 
 typedef struct {
-	uint8_t bLength; 
+	uint8_t bLength;
 	uint8_t bDescriptorType;
-	uint8_t bFirstInterface; 
-	uint8_t bInterfaceCount; 
-	uint8_t bFunctionClass; 
-	uint8_t bFunctionSubClass; 
-	uint8_t bFunctionProtocol; 
+	uint8_t bFirstInterface;
+	uint8_t bInterfaceCount;
+	uint8_t bFunctionClass;
+	uint8_t bFunctionSubClass;
+	uint8_t bFunctionProtocol;
 	uint8_t iFunction;
 } __attribute__ ((packed)) USB_InterfaceAssociationDescriptor;
 
@@ -205,3 +205,40 @@ typedef struct {
 	uint8_t reserved[7];
 	USB_MicrosoftCompatibleDescriptor_Interface interfaces[];
 } __attribute__((packed)) USB_MicrosoftCompatibleDescriptor;
+
+#include <stddef.h>	// for wchar_t
+/*
+typedef struct {
+	uint32_t dwLength;
+	uint16_t bcdVersion;
+	uint16_t wIndex;
+	uint16_t wCount;
+	uint32_t dwPropLength;
+	uint32_t dwType;
+	uint16_t wNameLength;
+	wchar_t name[20];
+	uint32_t dwDataLength;
+	wchar_t data[39];
+} __attribute__((packed)) USB_MicrosoftExtendedPropertiesDescriptor;
+*/
+
+typedef struct {
+	uint32_t dwLength;
+	uint16_t bcdVersion;
+	uint16_t wIndex;
+	uint16_t wCount;
+
+	uint32_t dwPropLength;
+	uint32_t dwType;
+	uint16_t wNameLength;
+	wchar_t name[20];
+	uint32_t dwDataLength;
+	wchar_t data[39];
+
+	uint32_t dwPropLength2;
+	uint32_t dwType2;
+	uint16_t wNameLength2;
+	wchar_t name2[6];
+	uint32_t dwDataLength2;
+	wchar_t data2[13];
+} __attribute__((packed)) USB_MicrosoftExtendedPropertiesDescriptor;

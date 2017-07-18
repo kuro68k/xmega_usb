@@ -1,23 +1,13 @@
 # Minimal, portable USB stack
 
- * Hardware drivers for Atmel SAM D, NXP LPC18xx/LPC43xx, and Atmel Xmega USB device peripherals
- * Cross-device API for manipulating endpoints
- * Descriptors and constants for USB core
- * Implementation of required control transfers and enumeration
- * Descriptors and implementation for DFU (firmware update) class
- * Descriptors for CDC (serial) class
- * Supports [WCID](https://github.com/pbatard/libwdi/wiki/WCID-Devices) automatic driver installation on Windows
- * MIT license
+Fork of: https://github.com/kevinmehall/usb
 
-A USB DFU bootloader for SAMD21 (Cortex M0) uses under 4KB of flash and 1KB of RAM.
+WCID supported added to minimal example. Note that you need at least one endpoint for WCID to work.
 
-Compared to vendor USB stacks (Atmel ASF, Keil), it is much lighter weight, provides you the tools to build a fully-custom USB device, perhaps with multiple interfaces and endpoints, rather than implementing a fixed class. It uses structures instead of byte arrays to make descriptors more readable, and interrupt-context callbacks to integrate with your bare-metal code or RTOS scheduler.
+Enabled multi-packet mode for IN transfers greater than 64 bytes. These only work when the data buffer is in RAM, data in program memory is copied to a 64 byte buffer before sending. This is mainly to support WCID descriptors.
 
-Compared to [LUFA](http://www.fourwalledcubicle.com/LUFA.php), it has better support for Cortex-M devices, is better suited for modern DMA-integrated USB controllers, and more interrupt-driven, but does not provide as many class drivers.
+Added some comments to help configure the stack. Tested and verified operation a little.
 
-## Open source firmware using this code
+Minimal example with WCID and 1 bulk IN/OUT endpoint comes in at around 2.5k flash and 400 bytes of RAM.
 
-* [Tessel 2 (SAMD21J18A)](https://github.com/tessel/t2-firmware)
-* [Tessel 1 (LPC1830)](https://github.com/tessel/t1-firmware)
-* [Nonolith CEE (Xmega32A4U)](http://nonolithlabs.com/cee)
-* [Starfish (SAMD21E16A)](https://github.com/kevinmehall/starfish)
+MIT license.

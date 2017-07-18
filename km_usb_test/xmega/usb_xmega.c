@@ -4,6 +4,33 @@
 #include "xmega/usb_xmega.h"
 #include "xmega/usb_xmega_internal.h"
 
+
+void CCPWrite(volatile uint8_t *address, uint8_t value)
+{
+	uint8_t	saved_sreg;
+
+	// disable interrupts if running
+	saved_sreg = SREG;
+	cli();
+
+	volatile uint8_t * tmpAddr = address;
+	RAMPZ = 0;
+
+	asm volatile(
+	"movw r30,  %0"       "\n\t"
+	"ldi  r16,  %2"       "\n\t"
+	"out   %3, r16"       "\n\t"
+	"st     Z,  %1"       "\n\t"
+	:
+	: "r" (tmpAddr), "r" (value), "M" (CCP_IOREG_gc), "i" (&CCP)
+	: "r16", "r30", "r31"
+	);
+
+	SREG = saved_sreg;
+}
+
+
+
 void usb_init(){
 	//uint_reg_t CurrentGlobalInt = GetGlobalInterruptMask();
 	//GlobalInterruptDisable();
@@ -19,21 +46,24 @@ void usb_init(){
 }
 
 void usb_reset(){
-
-	//if (USB_Options & USB_DEVICE_OPT_LOWSPEED)
-	//  CLK.USBCTRL = ((((F_USB / 6000000) - 1) << CLK_USBPSDIV_gp) | CLK_USBSRC_RC32M_gc | CLK_USBSEN_bm);
-	//else
+#ifdef USB_USE_PLL
+	CLK.USBCTRL = CLK_USBPSDIV_1_gc | CLK_USBSRC_PLL_gc | CLK_USBSEN_bm;
+#endif
+#if USB_USE_RC32
 	CLK.USBCTRL = ((((F_USB / 48000000) - 1) << CLK_USBPSDIV_gp) | CLK_USBSRC_RC32M_gc | CLK_USBSEN_bm);
+#endif
+	//CLK.USBCTRL = ((((F_USB / 6000000) - 1) << CLK_USBPSDIV_gp) | CLK_USBSRC_RC32M_gc | CLK_USBSEN_bm);
+
 	USB.EPPTR = (unsigned) &usb_xmega_endpoints;
 	USB.ADDR = 0;
-	
+
 	usb_xmega_endpoints[0].out.STATUS = 0;
 	usb_xmega_endpoints[0].out.CTRL = USB_EP_TYPE_CONTROL_gc | USB_EP_size_to_gc(USB_EP0_SIZE);
 	usb_xmega_endpoints[0].out.DATAPTR = (unsigned) &ep0_buf_out;
 	usb_xmega_endpoints[0].in.STATUS = USB_EP_BUSNACK0_bm;
-	usb_xmega_endpoints[0].in.CTRL = USB_EP_TYPE_CONTROL_gc | USB_EP_size_to_gc(USB_EP0_SIZE);
+	usb_xmega_endpoints[0].in.CTRL = USB_EP_TYPE_CONTROL_gc | USB_EP_MULTIPKT_bm | USB_EP_size_to_gc(USB_EP0_SIZE);
 	usb_xmega_endpoints[0].in.DATAPTR = (unsigned) &ep0_buf_in;
-	
+
 	USB.CTRLA = USB_ENABLE_bm | USB_SPEED_bm | (usb_num_endpoints+1);
 }
 
@@ -81,6 +111,7 @@ inline usb_bank usb_ep_start_out(uint8_t ep, uint8_t* data, usb_size len) {
 inline usb_bank usb_ep_start_in(uint8_t ep, const uint8_t* data, usb_size size, bool zlp) {
 	_USB_EP(ep);
 	e->DATAPTR = (unsigned) data;
+	e->AUXDATA = 0;	// for multi-packet
 	e->CNT = size | (zlp << 15);
 	LACR16(&(e->STATUS), USB_EP_BUSNACK0_bm | USB_EP_TRNCOMPL0_bm);
 	return 0;
@@ -139,6 +170,23 @@ void usb_set_speed(USB_Speed speed) { }
 USB_Speed usb_get_speed() { return USB_SPEED_FULL; }
 
 void usb_configure_clock() {
+#ifdef USB_USE_PLL
+	OSC.XOSCCTRL = OSC_FRQRANGE_12TO16_gc | OSC_XOSCSEL_XTAL_16KCLK_gc;
+	//CCP = CCP_IOREG_gc; //Security Signature to modify clock
+    OSC.CTRL |= OSC_XOSCEN_bm;
+	while(!(OSC.STATUS & OSC_XOSCRDY_bm));
+
+	OSC.PLLCTRL = OSC_PLLSRC_XOSC_gc | 3;		// 48MHz for USB
+	OSC.CTRL |= OSC_PLLEN_bm;
+	while(!(OSC.STATUS & OSC_PLLRDY_bm));
+
+	CCPWrite(&CLK.PSCTRL, CLK_PSADIV_2_gc | CLK_PSBCDIV_1_1_gc);	// 24MHz CPU clock
+	CCPWrite(&CLK.CTRL, CLK_SCLKSEL_PLL_gc);
+
+	OSC.CTRL = OSC_XOSCEN_bm | OSC_PLLEN_bm;	// disable other clocks
+#endif
+
+#ifdef USB_USE_RC32
 	// Configure DFLL for 48MHz, calibrated by USB SOF
 	OSC.DFLLCTRL = OSC_RC32MCREF_USBSOF_gc;
 	NVM.CMD  = NVM_CMD_READ_CALIB_ROW_gc;
@@ -146,24 +194,25 @@ void usb_configure_clock() {
 	DFLLRC32M.COMP1 = 0x1B; //Xmega AU manual, 4.17.19
 	DFLLRC32M.COMP2 = 0xB7;
 	DFLLRC32M.CTRL = DFLL_ENABLE_bm;
-	
-	CCP = CCP_IOREG_gc; //Security Signature to modify clock 
+
+	CCP = CCP_IOREG_gc; //Security Signature to modify clock
     OSC.CTRL = OSC_RC32MEN_bm | OSC_RC2MEN_bm; // enable internal 32MHz oscillator
-    
+
     while(!(OSC.STATUS & OSC_RC32MRDY_bm)); // wait for oscillator ready
-    
+
     OSC.PLLCTRL = OSC_PLLSRC_RC2M_gc | 16; // 2MHz * 16 = 32MHz
-    
+
     CCP = CCP_IOREG_gc;
     OSC.CTRL = OSC_RC32MEN_bm | OSC_PLLEN_bm | OSC_RC2MEN_bm ; // Enable PLL
-    
+
     while(!(OSC.STATUS & OSC_PLLRDY_bm)); // wait for PLL ready
-    
+
     DFLLRC2M.CTRL = DFLL_ENABLE_bm;
 
-    CCP = CCP_IOREG_gc; //Security Signature to modify clock 
+    CCP = CCP_IOREG_gc; //Security Signature to modify clock
     CLK.CTRL = CLK_SCLKSEL_PLL_gc; // Select PLL
     CLK.PSCTRL = 0x00; // No peripheral clock prescaler
+#endif
 }
 
 ISR(USB_BUSEVENT_vect){

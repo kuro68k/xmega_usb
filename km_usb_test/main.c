@@ -1,15 +1,21 @@
+/*
+ * km_usb_test.c
+ *
+ */
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "xmega/usb_xmega.h"
 
-USB_ENDPOINTS(0);
+USB_ENDPOINTS(1);
 
-int main(void){
-	PORTE.DIRSET = (1<<0) | (1<<1);
-	PORTE.OUTSET = (1<<0);
-	PORTR.DIRSET = 1 << 1;
-	
+int main(void)
+{
 	usb_configure_clock();
+
+	PORTCFG.CLKEVOUT = PORTCFG_CLKOUTSEL_CLK1X_gc | PORTCFG_CLKOUT_PC7_gc;
+	PORTC.DIRSET = PIN7_bm;
+	//for(;;);
 
 	// Enable USB interrupts
 	USB.INTCTRLA = /*USB_SOFIE_bm |*/ USB_BUSEVIE_bm | USB_INTLVL_MED_gc;
@@ -17,10 +23,13 @@ int main(void){
 
 	usb_init();
 
+	USB.CTRLA |= USB_FIFOEN_bm;
+
 	PMIC.CTRL = PMIC_LOLVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_HILVLEN_bm;
-	sei(); 
+	sei();
 
 	usb_attach();
 
-	while (1){}
+	for(;;);
 }
+
