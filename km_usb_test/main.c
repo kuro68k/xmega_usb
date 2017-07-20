@@ -7,8 +7,6 @@
 #include <avr/interrupt.h>
 #include "xmega/usb_xmega.h"
 
-USB_ENDPOINTS(1);
-
 int main(void)
 {
 	usb_configure_clock();

@@ -88,7 +88,7 @@ const uint8_t* usb_ep0_from_progmem(const uint8_t* addr, uint16_t size) {
 inline void usb_ep_enable(uint8_t ep, uint8_t type, usb_size bufsize){
 	_USB_EP(ep);
 	e->STATUS = USB_EP_BUSNACK0_bm;
-	e->CTRL = type | USB_EP_size_to_gc(bufsize);
+	e->CTRL = (type << USB_EP_TYPE_gp) | USB_EP_size_to_gc(bufsize);
 }
 
 inline void usb_ep_disable(uint8_t ep) {

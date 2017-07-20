@@ -11,6 +11,7 @@
 #define WCID_REQUEST_ID			0x22
 #define WCID_REQUEST_ID_STR		u"\x22"
 
+USB_ENDPOINTS(1);
 
 const USB_DeviceDescriptor PROGMEM device_descriptor = {
 	.bLength = sizeof(USB_DeviceDescriptor),
