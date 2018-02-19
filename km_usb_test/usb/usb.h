@@ -5,9 +5,7 @@
 #include <string.h>
 
 #include "usb_standard.h"
-
-#define USB_USE_PLL			// configure in usb_configure_clock()
-//#define USB_USE_RC32
+#include "usb_config.h"
 
 #define USB_EP0_SIZE 64
 

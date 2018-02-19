@@ -1,5 +1,6 @@
 #include <avr/pgmspace.h>
 #include "xmega/usb_xmega.h"
+#include "usb_config.h"
 
 // Notes:
 // Fill in VID/PID in device_descriptor
@@ -23,13 +24,17 @@ const USB_DeviceDescriptor PROGMEM device_descriptor = {
 	.bDeviceProtocol        = USB_CSCP_NoDeviceProtocol,
 
 	.bMaxPacketSize0        = 64,
-	.idVendor               = 0x9999,
-	.idProduct              = 0x0034,
-	.bcdDevice              = 0x0100,
+	.idVendor               = USB_VID,
+	.idProduct              = USB_PID,
+	.bcdDevice              = (USB_VERSION_MAJOR << 8) | (USB_VERSION_MINOR),
 
 	.iManufacturer          = 0x01,
 	.iProduct               = 0x02,
-	.iSerialNumber          = 0,
+#ifdef USB_SERIAL_NUMBER
+	.iSerialNumber          = 0x03,
+#else
+	.iSerialNumber          = 0x00,
+#endif
 
 	.bNumConfigurations     = 1
 };
@@ -82,6 +87,9 @@ const __flash ConfigDesc configuration_descriptor = {
 	},
 };
 
+#define	CONCAT(a, b)	a##b
+#define	USTRING(s)		CONCAT(u, s)
+
 const __flash USB_StringDescriptor language_string = {
 	.bLength = USB_STRING_LEN(1),
 	.bDescriptorType = USB_DTYPE_String,
@@ -89,15 +97,15 @@ const __flash USB_StringDescriptor language_string = {
 };
 
 const __flash USB_StringDescriptor manufacturer_string = {
-	.bLength = USB_STRING_LEN(13),
+	.bLength = USB_STRING_LEN(USB_STRING_MANUFACTURER),
 	.bDescriptorType = USB_DTYPE_String,
-	.bString = u"Nonolith Labs"
+	.bString = USTRING(USB_STRING_MANUFACTURER)
 };
 
 const __flash USB_StringDescriptor product_string = {
-	.bLength = USB_STRING_LEN(14),
+	.bLength = USB_STRING_LEN(USB_STRING_PRODUCT),
 	.bDescriptorType = USB_DTYPE_String,
-	.bString = u"Example Device"
+	.bString = USTRING(USB_STRING_PRODUCT)
 };
 
 

@@ -82,7 +82,7 @@ typedef enum {
 } USB_cscp;
 
 #define USB_CONFIG_POWER_MA(mA) ((mA)/2)
-#define USB_STRING_LEN(c) (sizeof(USB_DescriptorHeader) + ((c) * 2))
+#define USB_STRING_LEN(s) (sizeof(USB_DescriptorHeader) + ((sizeof(s)-1) * 2))
 
 #define USB_LANGUAGE_EN_US 0x0409
 
