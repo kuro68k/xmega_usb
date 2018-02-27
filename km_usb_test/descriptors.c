@@ -1,5 +1,6 @@
 #include <avr/pgmspace.h>
 #include "xmega/usb_xmega.h"
+#include "dfu.h"
 #include "usb_config.h"
 
 // Notes:
@@ -14,12 +15,19 @@
 
 USB_ENDPOINTS(1);
 
+/**************************************************************************************************
+ *	USB Device descriptor
+ */
 const USB_DeviceDescriptor PROGMEM device_descriptor = {
-	.bLength = sizeof(USB_DeviceDescriptor),
-	.bDescriptorType = USB_DTYPE_Device,
+	.bLength				= sizeof(USB_DeviceDescriptor),
+	.bDescriptorType		= USB_DTYPE_Device,
 
 	.bcdUSB                 = 0x0200,
+#ifndef USB_HID
 	.bDeviceClass           = USB_CSCP_VendorSpecificClass,
+#else
+	.bDeviceClass           = USB_CSCP_NoDeviceClass,
+#endif
 	.bDeviceSubClass        = USB_CSCP_NoDeviceSubclass,
 	.bDeviceProtocol        = USB_CSCP_NoDeviceProtocol,
 
@@ -39,12 +47,19 @@ const USB_DeviceDescriptor PROGMEM device_descriptor = {
 	.bNumConfigurations     = 1
 };
 
+
+/**************************************************************************************************
+ *	USB Configuration descriptor
+ */
 typedef struct ConfigDesc {
 	USB_ConfigurationDescriptor Config;
 	USB_InterfaceDescriptor Interface0;
 	USB_EndpointDescriptor DataInEndpoint;
 	USB_EndpointDescriptor DataOutEndpoint;
-
+#ifdef USB_DFU_RUNTIME
+	USB_InterfaceDescriptor DFU_intf_runtime;
+	DFU_FunctionalDescriptor DFU_desc_runtime;
+#endif
 } ConfigDesc;
 
 const __flash ConfigDesc configuration_descriptor = {
@@ -52,7 +67,11 @@ const __flash ConfigDesc configuration_descriptor = {
 		.bLength = sizeof(USB_ConfigurationDescriptor),
 		.bDescriptorType = USB_DTYPE_Configuration,
 		.wTotalLength  = sizeof(ConfigDesc),
+#ifndef USB_DFU_RUNTIME
 		.bNumInterfaces = 1,
+#else
+		.bNumInterfaces = 2,
+#endif
 		.bConfigurationValue = 1,
 		.iConfiguration = 0,
 		.bmAttributes = USB_CONFIG_ATTR_BUSPOWERED,
@@ -85,8 +104,32 @@ const __flash ConfigDesc configuration_descriptor = {
 		.wMaxPacketSize = 64,
 		.bInterval = 0x00
 	},
+#ifdef USB_DFU_RUNTIME
+	.DFU_intf_runtime = {
+		.bLength = sizeof(USB_InterfaceDescriptor),
+		.bDescriptorType = USB_DTYPE_Interface,
+		.bInterfaceNumber = 1,
+		.bAlternateSetting = 0,
+		.bNumEndpoints = 0,
+		.bInterfaceClass = DFU_INTERFACE_CLASS,
+		.bInterfaceSubClass = DFU_INTERFACE_SUBCLASS,
+		.bInterfaceProtocol = DFU_INTERFACE_PROTOCOL_DFUMODE,
+		.iInterface = 0x10
+	},
+	.DFU_desc_runtime = {
+		.bLength = sizeof(DFU_FunctionalDescriptor),
+		.bDescriptorType = DFU_DESCRIPTOR_TYPE,
+		.bmAttributes = (DFU_ATTR_CANDOWNLOAD_bm | DFU_ATTR_WILLDETACH_bm),
+		.wDetachTimeout = 0,
+		.wTransferSize = APP_SECTION_PAGE_SIZE,
+		.bcdDFUVersion = 0x0101
+	},
+#endif
 };
 
+/**************************************************************************************************
+ *	USB strings
+ */
 #define	CONCAT(a, b)	a##b
 #define	USTRING(s)		CONCAT(u, s)
 
@@ -109,7 +152,9 @@ const __flash USB_StringDescriptor product_string = {
 };
 
 
-
+/**************************************************************************************************
+ *	Optional serial number
+ */
 #ifdef USB_SERIAL_NUMBER
 USB_StringDescriptor serial_string = {
 	.bLength = 22*2,
@@ -161,14 +206,69 @@ void generate_serial(void)
 #endif
 
 
+/**************************************************************************************************
+ *	Optional DFU runtime interface
+ */
+#ifdef USB_DFU_RUNTIME
+const __flash USB_StringDescriptor dfu_runtime_string = {
+	.bLength = USB_STRING_LEN("Runtime"),
+	.bDescriptorType = USB_DTYPE_String,
+	.bString = u"Runtime"
+};
 
+void dfu_control_setup(void)
+{
+	switch (usb_setup.bRequest)
+	{
+		case DFU_DETACH:
+			dfu_runtime_cb_enter_dfu_mode();
+			return usb_ep0_out();
+
+		// read status
+		case DFU_GETSTATUS: {
+			uint8_t len = usb_setup.wLength;
+			if (len > sizeof(DFU_StatusResponse))
+				len = sizeof(DFU_StatusResponse);
+			DFU_StatusResponse *st = (DFU_StatusResponse *)ep0_buf_in;
+			st->bStatus = DFU_STATUS_OK;
+			st->bState = DFU_STATE_dfuIDLE;
+			st->bwPollTimeout[0] = 0;
+			st->bwPollTimeout[1] = 0;
+			st->bwPollTimeout[2] = 0;
+			st->iString = 0;
+			usb_ep0_in(len);
+			return usb_ep0_out();
+		}
+
+		// abort, clear status
+		case DFU_ABORT:
+		case DFU_CLRSTATUS:
+			usb_ep0_in(0);
+			return usb_ep0_out();
+
+		// read state
+		case DFU_GETSTATE:
+			ep0_buf_in[0] = 0;
+			usb_ep0_in(1);
+			return usb_ep0_out();
+
+		// unsupported requests
+		default:
+			return usb_ep0_stall();
+	}
+}
+#endif // USB_DFU_RUNTIME
+
+
+/**************************************************************************************************
+ *	Optional Microsoft WCID stuff
+ */
 #ifdef USB_WCID
 const __flash USB_StringDescriptor msft_string = {
 	.bLength = 18,
 	.bDescriptorType = USB_DTYPE_String,
 	.bString = u"MSFT100" WCID_REQUEST_ID_STR
 };
-
 
 __attribute__((__aligned__(4))) const USB_MicrosoftCompatibleDescriptor msft_compatible = {
 	.dwLength = sizeof(USB_MicrosoftCompatibleDescriptor) +
@@ -242,9 +342,34 @@ __attribute__((__aligned__(4))) const USB_MicrosoftExtendedPropertiesDescriptor 
 };
 */
 #endif // USB_WCID_EXTENDED
+
+void handle_msft_compatible(void) {
+	const uint8_t *data;
+	uint16_t len;
+#ifdef USB_WCID_EXTENDED
+	if (usb_setup.wIndex == 0x0005) {
+		len = msft_extended.dwLength;
+		data = (const uint8_t *)&msft_extended;
+	} else
+#endif
+	if (usb_setup.wIndex == 0x0004) {
+		len = msft_compatible.dwLength;
+		data = (const uint8_t *)&msft_compatible;
+	} else {
+		return usb_ep0_stall();
+	}
+	if (len > usb_setup.wLength) {
+		len = usb_setup.wLength;
+	}
+	usb_ep_start_in(0x80, data, len, true);
+	usb_ep0_out();
+}
 #endif // USB_WCID
 
 
+/**************************************************************************************************
+ *	USB request handling
+ */
 uint16_t usb_cb_get_descriptor(uint8_t type, uint8_t index, const uint8_t** ptr) {
 	const void* address = NULL;
 	uint16_t size    = 0;
@@ -274,6 +399,11 @@ uint16_t usb_cb_get_descriptor(uint8_t type, uint8_t index, const uint8_t** ptr)
 					generate_serial();
 					*ptr = (uint8_t *)&serial_string;
 					return serial_string.bLength;
+#endif
+#ifdef USB_DFU_RUNTIME
+				case 0x10:
+					address = &dfu_runtime_string;
+					break;
 #endif
 #ifdef USB_WCID
 				case 0xEE:
@@ -306,56 +436,37 @@ void usb_cb_completion(void) {
 }
 
 
-#ifdef USB_WCID
-void handle_msft_compatible(void) {
-	const uint8_t *data;
-	uint16_t len;
-#ifdef USB_WCID_EXTENDED
-	if (usb_setup.wIndex == 0x0005) {
-		len = msft_extended.dwLength;
-		data = (const uint8_t *)&msft_extended;
-	} else
-#endif
-	if (usb_setup.wIndex == 0x0004) {
-		len = msft_compatible.dwLength;
-		data = (const uint8_t *)&msft_compatible;
-	} else {
-		return usb_ep0_stall();
-	}
-	if (len > usb_setup.wLength) {
-		len = usb_setup.wLength;
-	}
-	usb_ep_start_in(0x80, data, len, true);
-	usb_ep0_out();
-}
-#endif
+
 
 void usb_cb_control_setup(void) {
-#ifdef USB_WCID
 	uint8_t recipient = usb_setup.bmRequestType & USB_REQTYPE_RECIPIENT_MASK;
 	if (recipient == USB_RECIPIENT_DEVICE) {
 		switch(usb_setup.bRequest) {
+#ifdef USB_WCID
 			case WCID_REQUEST_ID:
 				return handle_msft_compatible();
+#endif
 		}
 	} else if (recipient == USB_RECIPIENT_INTERFACE) {
-		switch(usb_setup.bRequest) {
+		if (usb_setup.wIndex == 0) {			// main interface
+			switch(usb_setup.bRequest) {
 #ifdef USB_WCID_EXTENDED
-			case WCID_REQUEST_ID:
-				return handle_msft_compatible();
+				case WCID_REQUEST_ID:
+					return handle_msft_compatible();
 #endif
+			}
+		} else if (usb_setup.wIndex == 1) {		// DFU interface
+			return dfu_control_setup();
 		}
 	}
-#endif
+
 	return usb_ep0_stall();
 }
 
 void usb_cb_control_in_completion(void) {
-
 }
 
 void usb_cb_control_out_completion(void) {
-
 }
 
 bool usb_cb_set_interface(uint16_t interface, uint16_t altsetting) {

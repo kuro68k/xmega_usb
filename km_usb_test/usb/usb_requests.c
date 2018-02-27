@@ -1,3 +1,4 @@
+#include <avr/io.h>
 #include "usb.h"
 
 USB_SetupPacket usb_setup;
