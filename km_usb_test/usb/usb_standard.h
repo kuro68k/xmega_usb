@@ -49,6 +49,22 @@ enum {
 	USB_REQ_SynchFrame = 12,
 };
 
+// HID class requests
+enum {
+	USB_HIDREQ_GET_REPORT = 0x01,
+	USB_HIDREQ_GET_IDLE = 0x02,
+	USB_HIDREQ_GET_PROTOCOL = 0x03,
+	USB_HIDREQ_SET_REPORT = 0x09,
+	USB_HIDREQ_SET_IDLE = 0x0A,
+	USB_HIDREQ_SET_PROTOCOL = 0x0B,
+};
+
+enum {
+	USB_HID_REPORT_TYPE_INPUT = 0x01,
+	USB_HID_REPORT_TYPE_OUTPUT = 0x02,
+	USB_HID_REPORT_TYPE_FEATURE = 0x03,
+};
+
 enum {
 	USB_FEATURE_EndpointHalt = 0x00,
 	USB_FEATURE_DeviceRemoteWakeup = 0x01,
@@ -65,6 +81,9 @@ enum {
 	USB_DTYPE_Other = 0x07,
 	USB_DTYPE_InterfacePower = 0x08,
 	USB_DTYPE_InterfaceAssociation = 0x0B,
+	USB_DTYPE_HID = 0x21,
+	USB_DTYPE_Report = 0x22,
+	USB_DTYPE_Physical = 0x23,
 	USB_DTYPE_CSInterface = 0x24,
 	USB_DTYPE_CSEndpoint = 0x25,
 } USB_dtype;
@@ -79,7 +98,17 @@ typedef enum {
 	USB_CSCP_IADDeviceClass = 0xEF,
 	USB_CSCP_IADDeviceSubclass = 0x02,
 	USB_CSCP_IADDeviceProtocol = 0x01,
+	USB_CSCP_HIDClass = 0x03,
+	USB_CSCP_HIDNoSubclass = 0x00,
+	USB_CSCP_HIDBootSubclass = 0x01,
+	USB_CSCP_HIDNoProtocol = 0x00,
+	USB_CSCP_HIDKeyboardProtocol = 0x01,
+	USB_CSCP_HIDMouseProtocol = 0x02,
 } USB_cscp;
+
+enum {
+	USB_RDTYPE_Report = 0x34,
+} USB_rdtype;
 
 #define USB_CONFIG_POWER_MA(mA) ((mA)/2)
 #define USB_STRING_LEN(s) (sizeof(USB_DescriptorHeader) + ((sizeof(s)-1) * 2))
@@ -187,6 +216,16 @@ typedef struct {
 	uint8_t bDescriptorType;
 	__CHAR16_TYPE__ bString[];
 } __attribute__ ((packed)) USB_StringDescriptor;
+
+typedef struct {
+	uint8_t bLength;
+	uint8_t bDescriptorType;
+	uint16_t bcdHID;
+	uint8_t bCountryCode;
+	uint8_t bNumDescriptors;
+	uint8_t bReportDescriptorType;
+	uint16_t wDescriptorLength;
+} __attribute__ ((packed)) USB_HIDDescriptor;
 
 /// Microsoft WCID descriptor
 typedef struct {
