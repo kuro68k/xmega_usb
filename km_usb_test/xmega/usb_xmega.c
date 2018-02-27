@@ -54,7 +54,7 @@ void usb_reset(){
 #endif
 	//CLK.USBCTRL = ((((F_USB / 6000000) - 1) << CLK_USBPSDIV_gp) | CLK_USBSRC_RC32M_gc | CLK_USBSEN_bm);
 
-	USB.EPPTR = (unsigned) &usb_xmega_endpoints;
+	USB.EPPTR = (unsigned) usb_xmega_endpoints;
 	USB.ADDR = 0;
 
 	usb_xmega_endpoints[0].out.STATUS = 0;
