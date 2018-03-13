@@ -31,31 +31,27 @@ void CCPWrite(volatile uint8_t *address, uint8_t value)
 
 
 
-void usb_init(){
-	//uint_reg_t CurrentGlobalInt = GetGlobalInterruptMask();
-	//GlobalInterruptDisable();
-
+/**************************************************************************************************
+* Initialize up USB after reset
+*/
+void usb_init()
+{
+	uint8_t saved_sreg = SREG;
+	cli();
 	NVM.CMD  = NVM_CMD_READ_CALIB_ROW_gc;
 	USB.CAL0 = pgm_read_byte(offsetof(NVM_PROD_SIGNATURES_t, USBCAL0));
 	NVM.CMD  = NVM_CMD_READ_CALIB_ROW_gc;
 	USB.CAL1 = pgm_read_byte(offsetof(NVM_PROD_SIGNATURES_t, USBCAL1));
-
-	//SetGlobalInterruptMask(CurrentGlobalInt);
+	SREG = saved_sreg;
 
 	usb_reset();
 }
 
-void usb_reset(){
-	USARTC1.DATA = 0x99;
-
-#ifdef USB_USE_PLL
-	CLK.USBCTRL = CLK_USBPSDIV_1_gc | CLK_USBSRC_PLL_gc | CLK_USBSEN_bm;
-#endif
-#if USB_USE_RC32
-	CLK.USBCTRL = ((((F_USB / 48000000) - 1) << CLK_USBPSDIV_gp) | CLK_USBSRC_RC32M_gc | CLK_USBSEN_bm);
-#endif
-	//CLK.USBCTRL = ((((F_USB / 6000000) - 1) << CLK_USBPSDIV_gp) | CLK_USBSRC_RC32M_gc | CLK_USBSEN_bm);
-
+/**************************************************************************************************
+* Reset USB stack after device or USB reset
+*/
+void usb_reset()
+{
 	USB.EPPTR = (unsigned) usb_xmega_endpoints;
 	USB.ADDR = 0;
 
@@ -71,7 +67,7 @@ void usb_reset(){
 	usb_ep_enable(0x81, USB_EP_TYPE_BULK_gc, 64, false);
 #endif
 
-	USB.CTRLA = USB_ENABLE_bm | USB_SPEED_bm | (usb_num_endpoints);
+	USB.CTRLA = USB_ENABLE_bm | USB_SPEED_bm | usb_num_endpoints;
 	usb_attach();
 }
 
@@ -179,10 +175,10 @@ inline void usb_ep0_stall(void) {
 void usb_set_speed(USB_Speed speed) { }
 USB_Speed usb_get_speed() { return USB_SPEED_FULL; }
 
-void usb_configure_clock() {
+void usb_configure_clock()
+{
 #ifdef USB_USE_PLL
 	OSC.XOSCCTRL = OSC_FRQRANGE_12TO16_gc | OSC_XOSCSEL_XTAL_16KCLK_gc;
-	//CCP = CCP_IOREG_gc; //Security Signature to modify clock
     OSC.CTRL |= OSC_XOSCEN_bm;
 	while(!(OSC.STATUS & OSC_XOSCRDY_bm));
 
@@ -194,6 +190,8 @@ void usb_configure_clock() {
 	CCPWrite(&CLK.CTRL, CLK_SCLKSEL_PLL_gc);
 
 	OSC.CTRL = OSC_XOSCEN_bm | OSC_PLLEN_bm;	// disable other clocks
+
+	CLK.USBCTRL = CLK_USBPSDIV_1_gc | CLK_USBSRC_PLL_gc | CLK_USBSEN_bm;
 #endif
 
 #ifdef USB_USE_RC32
@@ -222,6 +220,8 @@ void usb_configure_clock() {
     CCP = CCP_IOREG_gc; //Security Signature to modify clock
     CLK.CTRL = CLK_SCLKSEL_PLL_gc; // Select PLL
     CLK.PSCTRL = 0x00; // No peripheral clock prescaler
+
+	CLK.USBCTRL = CLK_USBPSDIV_1_gc | CLK_USBSRC_RC32M_gc | CLK_USBSEN_bm;
 #endif
 }
 

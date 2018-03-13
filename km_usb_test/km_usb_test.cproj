@@ -110,7 +110,6 @@
     <ListValues>
       <Value>DEBUG</Value>
       <Value>F_CPU=24000000</Value>
-      <Value>F_USB=48000000</Value>
     </ListValues>
   </avrgcc.compiler.symbols.DefSymbols>
   <avrgcc.compiler.directories.IncludePaths>
