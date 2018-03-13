@@ -16,7 +16,6 @@
 #define USB_VERSION_MAJOR	1
 #define USB_VERSION_MINOR	0
 
-
 /* USB strings
  */
 #define USB_STRING_MANUFACTURER		"Example Manufacturer"
@@ -51,6 +50,7 @@
 #define USB_USE_PLL			// configure in usb_configure_clock() in usb_xmega.c
 //#define USB_USE_RC32
 
+//#define USB_LOW_SPEED
 
 /* DFU callbacks
  */

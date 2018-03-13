@@ -77,7 +77,7 @@ inline void usb_ep_wait_for_pending(uint8_t ep){
 /// Start an asynchronous host->device transfer.
 /// The data will be received into data up to size len. This buffer must remain valid until
 /// the callback is called
-usb_bank usb_ep_start_out(usb_ep ep, uint8_t* data, usb_size len);
+void usb_ep_start_out(usb_ep ep, uint8_t* data, usb_size len);
 
 /// Gets the length of a pending completion on an OUT endpoint
 usb_size usb_ep_out_length(usb_ep ep);
@@ -86,7 +86,7 @@ usb_size usb_ep_out_length(usb_ep ep);
 /// The data will be sent from the data buffer. This buffer must remain valid until the
 /// the callback is called. If zlp is set and the data is not a multiple of the packet
 /// size, an extra zero-length packet will be sent to terminate the transfer.
-usb_bank usb_ep_start_in(uint8_t ep, const uint8_t* data, usb_size size, bool zlp);
+void usb_ep_start_in(uint8_t ep, const uint8_t* data, usb_size size, bool zlp);
 
 /// Clear a completion on an endpoint
 void usb_ep_handled(usb_ep ep);

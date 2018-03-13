@@ -1,3 +1,12 @@
+/* usb_xmega.c
+ *
+ * Copyright 2011-2014 Nonolith Labs
+ * Copyright 2014 Technical Machine
+ * Copyright 2017-2018 Paul Qureshi
+ *
+ * Low level USB driver for XMEGA.
+ */
+
 #include <avr/io.h>
 
 #include "usb.h"
@@ -5,6 +14,14 @@
 #include "xmega/usb_xmega_internal.h"
 
 
+#define _USB_EP(epaddr) \
+	USB_EP_pair_t* pair = &usb_xmega_endpoints[(epaddr & 0x3F)]; \
+	USB_EP_t* e __attribute__ ((unused)) = &pair->ep[!!(epaddr&0x80)]; \
+
+
+/**************************************************************************************************
+* Write register protected by change protection register
+*/
 void CCPWrite(volatile uint8_t *address, uint8_t value)
 {
 	uint8_t	saved_sreg;
@@ -28,8 +45,6 @@ void CCPWrite(volatile uint8_t *address, uint8_t value)
 
 	SREG = saved_sreg;
 }
-
-
 
 /**************************************************************************************************
 * Initialize up USB after reset
@@ -71,60 +86,66 @@ void usb_reset()
 	usb_attach();
 }
 
-void usb_set_address(uint8_t addr) {
-	USB.ADDR = addr;
-}
-
-const uint8_t* usb_ep0_from_progmem(const uint8_t* addr, uint16_t size) {
-	uint8_t *buf = ep0_buf_in;
-	uint16_t remaining = size;
-	NVM.CMD = NVM_CMD_NO_OPERATION_gc;
-	while (remaining--){
-		*buf++ = pgm_read_byte(addr++);
-	}
-	return ep0_buf_in;
-}
-
-#define _USB_EP(epaddr) \
-	USB_EP_pair_t* pair = &usb_xmega_endpoints[(epaddr & 0x3F)]; \
-	USB_EP_t* e __attribute__ ((unused)) = &pair->ep[!!(epaddr&0x80)]; \
-
-inline void usb_ep_enable(uint8_t ep, uint8_t type, usb_size bufsize, bool enable_interrupt)
+/**************************************************************************************************
+* Enable an endpoint.
+*
+* type				USB_EP_TYPE_*_gc
+* buffer_size		maximum payload size for endpoint
+* enable_interrupt	enable transaction complete interrupt
+*/
+inline void usb_ep_enable(uint8_t ep, uint8_t type, usb_size buffer_size, bool enable_interrupt)
 {
 	_USB_EP(ep);
 	e->STATUS = USB_EP_BUSNACK0_bm | USB_EP_TRNCOMPL0_bm;
-	e->CTRL = type | USB_EP_size_to_gc(bufsize) | (enable_interrupt ? 0 : USB_EP_INTDSBL_bm);
+	e->CTRL = type | USB_EP_size_to_gc(buffer_size) | (enable_interrupt ? 0 : USB_EP_INTDSBL_bm);
 }
 
-inline void usb_ep_disable(uint8_t ep) {
+/**************************************************************************************************
+* Disable an endpoint.
+*/
+inline void usb_ep_disable(uint8_t ep)
+{
 	_USB_EP(ep);
 	e->CTRL = 0;
 }
 
-inline void usb_ep_reset(uint8_t ep){
+/**************************************************************************************************
+* Reset endpoint, clearing all error flags and making ready for use.
+*/
+inline void usb_ep_reset(uint8_t ep)
+{
 	_USB_EP(ep);
 	e->STATUS = USB_EP_BUSNACK0_bm | USB_EP_TRNCOMPL0_bm;
 }
 
-inline usb_bank usb_ep_start_out(uint8_t ep, uint8_t* data, usb_size len) {
+/**************************************************************************************************
+* Start receiving data into buffer from host.
+*/
+inline void usb_ep_start_out(uint8_t ep, uint8_t* data, usb_size len)
+{
 	_USB_EP(ep);
 	e->DATAPTR = (unsigned) data;
 	LACR16(&(e->STATUS), USB_EP_BUSNACK0_bm | USB_EP_TRNCOMPL0_bm);
-	return 0;
 }
 
-inline usb_bank usb_ep_start_in(uint8_t ep, const uint8_t* data, usb_size size, bool zlp) {
+/**************************************************************************************************
+* Start sending data from buffer to host
+*/
+inline void usb_ep_start_in(uint8_t ep, const uint8_t* data, usb_size size, bool zlp)
+{
 	_USB_EP(ep);
 	e->DATAPTR = (unsigned) data;
 	e->AUXDATA = 0;	// for multi-packet
 	e->CNT = size | (zlp << 15);
 	LACR16(&(e->STATUS), USB_EP_BUSNACK0_bm | USB_EP_TRNCOMPL0_bm);
-	return 0;
 }
 
-inline bool usb_ep_ready(uint8_t ep) {
+/**************************************************************************************************
+* Check if an endpoint is ready to start the next transaction
+*/
+inline bool usb_ep_ready(uint8_t ep)
+{
 	_USB_EP(ep);
-	//return !(e->STATUS & (USB_EP_BUSNACK0_bm | USB_EP_TRNCOMPL0_bm));
 	return !(e->STATUS & USB_EP_TRNCOMPL0_bm);
 }
 

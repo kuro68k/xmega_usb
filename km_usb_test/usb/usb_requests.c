@@ -250,11 +250,14 @@ void usb_handle_control_out_complete(void) {
 	}
 }
 
-void usb_handle_control_in_complete(void) {
-	if ((usb_setup.bmRequestType & USB_REQTYPE_TYPE_MASK) == USB_REQTYPE_STANDARD) {
-		switch (usb_setup.bRequest){
+void usb_handle_control_in_complete(void)
+{
+	if ((usb_setup.bmRequestType & USB_REQTYPE_TYPE_MASK) == USB_REQTYPE_STANDARD)
+	{
+		switch (usb_setup.bRequest)
+		{
 			case USB_REQ_SetAddress:
-				usb_set_address(usb_setup.wValue & 0x7F);
+				USB.ADDR = usb_setup.wValue & 0x7F;
 				return;
 			//case USB_REQ_GetDescriptor:
 			//	usb_ep0_in_multi();
