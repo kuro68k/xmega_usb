@@ -241,7 +241,6 @@ ISR(USB_BUSEVENT_vect)
 	{
 		USB.INTFLAGSACLR = USB_RSTIF_bm;
 		usb_reset();
-		usb_cb_reset();
 	}
 
 	USB.INTFLAGSACLR = USB_SUSPENDIF_bm | USB_RESUMEIF_bm;

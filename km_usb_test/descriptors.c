@@ -551,10 +551,6 @@ uint16_t usb_cb_get_descriptor(uint8_t type, uint8_t index, const uint8_t** ptr)
 	return size;
 }
 
-void usb_cb_reset(void) {
-
-}
-
 bool usb_cb_set_configuration(uint8_t config) {
 	if (config <= 1) {
 		return true;
@@ -562,13 +558,6 @@ bool usb_cb_set_configuration(uint8_t config) {
 		return false;
 	}
 }
-
-void usb_cb_completion(void) {
-
-}
-
-
-
 
 void usb_cb_control_setup(void) {
 	uint8_t recipient = usb_setup.bmRequestType & USB_REQTYPE_RECIPIENT_MASK;
@@ -601,12 +590,6 @@ void usb_cb_control_setup(void) {
 	}
 
 	return usb_ep0_stall();
-}
-
-void usb_cb_control_in_completion(void) {
-}
-
-void usb_cb_control_out_completion(void) {
 }
 
 bool usb_cb_set_interface(uint16_t interface, uint16_t altsetting) {

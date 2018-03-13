@@ -20,16 +20,8 @@ typedef size_t usb_size;
 typedef uint8_t usb_ep;
 typedef uint8_t usb_bank;
 
-/// Callback on reset
-void usb_cb_reset(void);
-
 /// Callback when a setup packet is received
 void usb_cb_control_setup(void);
-
-/// Callback on a completion interrupt
-void usb_cb_completion(void);
-void usb_cb_control_in_completion(void);
-void usb_cb_control_out_completion(void);
 
 /// Callback for a SET_CONFIGURATION request
 bool usb_cb_set_configuration(uint8_t config);
