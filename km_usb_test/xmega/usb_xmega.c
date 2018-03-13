@@ -68,7 +68,7 @@ void usb_reset(){
 	usb_xmega_endpoints[0].in.DATAPTR = (unsigned) &ep0_buf_in;
 
 #ifdef USB_HID
-	usb_ep_enable(0x81, USB_EP_TYPE_BULK_gc, 64);
+	usb_ep_enable(0x81, USB_EP_TYPE_BULK_gc, 64, false);
 #endif
 
 	USB.CTRLA = USB_ENABLE_bm | USB_SPEED_bm | (usb_num_endpoints);
@@ -93,12 +93,11 @@ const uint8_t* usb_ep0_from_progmem(const uint8_t* addr, uint16_t size) {
 	USB_EP_pair_t* pair = &usb_xmega_endpoints[(epaddr & 0x3F)]; \
 	USB_EP_t* e __attribute__ ((unused)) = &pair->ep[!!(epaddr&0x80)]; \
 
-inline void usb_ep_enable(uint8_t ep, uint8_t type, usb_size bufsize){
+inline void usb_ep_enable(uint8_t ep, uint8_t type, usb_size bufsize, bool enable_interrupt)
+{
 	_USB_EP(ep);
 	e->STATUS = USB_EP_BUSNACK0_bm | USB_EP_TRNCOMPL0_bm;
-	//LACR16(&(e->STATUS), USB_EP_BUSNACK0_bm );//| USB_EP_TRNCOMPL0_bm);
-	//e->CTRL = (type << USB_EP_TYPE_gp) | USB_EP_size_to_gc(bufsize);
-	e->CTRL = type | USB_EP_size_to_gc(bufsize) | USB_EP_INTDSBL_bm;
+	e->CTRL = type | USB_EP_size_to_gc(bufsize) | (enable_interrupt ? 0 : USB_EP_INTDSBL_bm);
 }
 
 inline void usb_ep_disable(uint8_t ep) {

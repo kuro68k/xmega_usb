@@ -56,7 +56,7 @@ void usb_reset(void);
 void usb_set_address(uint8_t addr);
 
 /// Configure and enable an endpoint
-void usb_ep_enable(usb_ep ep, uint8_t type, usb_size bufsize);
+void usb_ep_enable(usb_ep ep, uint8_t type, usb_size bufsize, bool enable_interrupt);
 
 /// Disable an endpoint
 void usb_ep_disable(usb_ep ep);
