@@ -151,6 +151,12 @@
     <Compile Include="usb\dfu.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="usb\hid.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="usb\hid.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="usb\usb.h">
       <SubType>compile</SubType>
     </Compile>

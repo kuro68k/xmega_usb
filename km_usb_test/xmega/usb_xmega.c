@@ -46,6 +46,8 @@ void usb_init(){
 }
 
 void usb_reset(){
+	USARTC1.DATA = 0x99;
+
 #ifdef USB_USE_PLL
 	CLK.USBCTRL = CLK_USBPSDIV_1_gc | CLK_USBSRC_PLL_gc | CLK_USBSEN_bm;
 #endif
@@ -57,14 +59,20 @@ void usb_reset(){
 	USB.EPPTR = (unsigned) usb_xmega_endpoints;
 	USB.ADDR = 0;
 
+	// endpoint 0 control IN/OUT
 	usb_xmega_endpoints[0].out.STATUS = 0;
-	usb_xmega_endpoints[0].out.CTRL = USB_EP_TYPE_CONTROL_gc | USB_EP_size_to_gc(USB_EP0_SIZE);
+	usb_xmega_endpoints[0].out.CTRL = USB_EP_TYPE_CONTROL_gc | USB_EP_size_to_gc(USB_EP0_MAX_PACKET_SIZE);
 	usb_xmega_endpoints[0].out.DATAPTR = (unsigned) &ep0_buf_out;
 	usb_xmega_endpoints[0].in.STATUS = USB_EP_BUSNACK0_bm;
-	usb_xmega_endpoints[0].in.CTRL = USB_EP_TYPE_CONTROL_gc | USB_EP_MULTIPKT_bm | USB_EP_size_to_gc(USB_EP0_SIZE);
+	usb_xmega_endpoints[0].in.CTRL = USB_EP_TYPE_CONTROL_gc | USB_EP_MULTIPKT_bm | USB_EP_size_to_gc(USB_EP0_MAX_PACKET_SIZE);
 	usb_xmega_endpoints[0].in.DATAPTR = (unsigned) &ep0_buf_in;
 
-	USB.CTRLA = USB_ENABLE_bm | USB_SPEED_bm | (usb_num_endpoints+1);
+#ifdef USB_HID
+	usb_ep_enable(0x81, USB_EP_TYPE_BULK_gc, 64);
+#endif
+
+	USB.CTRLA = USB_ENABLE_bm | USB_SPEED_bm | (usb_num_endpoints);
+	usb_attach();
 }
 
 void usb_set_address(uint8_t addr) {
@@ -87,8 +95,10 @@ const uint8_t* usb_ep0_from_progmem(const uint8_t* addr, uint16_t size) {
 
 inline void usb_ep_enable(uint8_t ep, uint8_t type, usb_size bufsize){
 	_USB_EP(ep);
-	e->STATUS = USB_EP_BUSNACK0_bm;
-	e->CTRL = (type << USB_EP_TYPE_gp) | USB_EP_size_to_gc(bufsize);
+	e->STATUS = USB_EP_BUSNACK0_bm | USB_EP_TRNCOMPL0_bm;
+	//LACR16(&(e->STATUS), USB_EP_BUSNACK0_bm );//| USB_EP_TRNCOMPL0_bm);
+	//e->CTRL = (type << USB_EP_TYPE_gp) | USB_EP_size_to_gc(bufsize);
+	e->CTRL = type | USB_EP_size_to_gc(bufsize) | USB_EP_INTDSBL_bm;
 }
 
 inline void usb_ep_disable(uint8_t ep) {
@@ -98,7 +108,7 @@ inline void usb_ep_disable(uint8_t ep) {
 
 inline void usb_ep_reset(uint8_t ep){
 	_USB_EP(ep);
-	e->STATUS = USB_EP_BUSNACK0_bm;
+	e->STATUS = USB_EP_BUSNACK0_bm | USB_EP_TRNCOMPL0_bm;
 }
 
 inline usb_bank usb_ep_start_out(uint8_t ep, uint8_t* data, usb_size len) {
@@ -119,7 +129,8 @@ inline usb_bank usb_ep_start_in(uint8_t ep, const uint8_t* data, usb_size size, 
 
 inline bool usb_ep_ready(uint8_t ep) {
 	_USB_EP(ep);
-	return !(e->STATUS & (USB_EP_BUSNACK0_bm | USB_EP_TRNCOMPL0_bm));
+	//return !(e->STATUS & (USB_EP_BUSNACK0_bm | USB_EP_TRNCOMPL0_bm));
+	return !(e->STATUS & USB_EP_TRNCOMPL0_bm);
 }
 
 inline bool usb_ep_empty(uint8_t ep) {
@@ -158,7 +169,7 @@ inline void usb_ep0_out(void) {
 }
 
 inline void usb_ep0_in(uint8_t size){
-	usb_ep_start_in(0x80, ep0_buf_in, size, false);
+	usb_ep_start_in(0x80, ep0_buf_in, size, true);
 }
 
 inline void usb_ep0_stall(void) {
@@ -215,42 +226,66 @@ void usb_configure_clock() {
 #endif
 }
 
-ISR(USB_BUSEVENT_vect){
-	if (USB.INTFLAGSACLR & USB_SOFIF_bm){
+ISR(USB_BUSEVENT_vect)
+{
+	USARTC1.DATA = 0x0B;
+	if (USB.INTFLAGSACLR & USB_SOFIF_bm)
 		USB.INTFLAGSACLR = USB_SOFIF_bm;
-	}else if (USB.INTFLAGSACLR & (USB_CRCIF_bm | USB_UNFIF_bm | USB_OVFIF_bm)){
-		USB.INTFLAGSACLR = (USB_CRCIF_bm | USB_UNFIF_bm | USB_OVFIF_bm);
-	}else if (USB.INTFLAGSACLR & USB_STALLIF_bm){
+
+	if (USB.INTFLAGSACLR & (USB_CRCIF_bm | USB_UNFIF_bm | USB_OVFIF_bm))	// CRC error, under/overflow
+		USB.INTFLAGSACLR = USB_CRCIF_bm | USB_UNFIF_bm | USB_OVFIF_bm;
+
+	if (USB.INTFLAGSACLR & USB_STALLIF_bm)
 		USB.INTFLAGSACLR = USB_STALLIF_bm;
-	}else{
-		USB.INTFLAGSACLR = USB_SUSPENDIF_bm | USB_RESUMEIF_bm | USB_RSTIF_bm;
-		if (USB.STATUS & USB_BUSRST_bm){
-			USB.STATUS &= ~USB_BUSRST_bm;
-			usb_reset();
-			usb_cb_reset();
-		}
+
+	if (USB.INTFLAGSASET & USB_RSTIF_bm)
+	{
+		USB.INTFLAGSACLR = USB_RSTIF_bm;
+		usb_reset();
+		usb_cb_reset();
 	}
+
+	USB.INTFLAGSACLR = USB_SUSPENDIF_bm | USB_RESUMEIF_bm;
 }
 
-ISR(USB_TRNCOMPL_vect){
-	USB.FIFOWP = 0;
+ISR(USB_TRNCOMPL_vect)
+{
+	USB.FIFOWP = 0;	// clear TCIF????
 	USB.INTFLAGSBCLR = USB_SETUPIF_bm | USB_TRNIF_bm;
 
 	// Read once to prevent race condition where SETUP packet is interpreted as OUT
 	uint8_t status = usb_xmega_endpoints[0].out.STATUS;
-	if (status & USB_EP_SETUP_bm){
+	if (status & USB_EP_SETUP_bm)
+	{
+		USARTC1.DATA = 0x4A;
 		// TODO: race conditions because we can't block a setup packet
-		LACR16(&(usb_xmega_endpoints[0].out.STATUS), USB_EP_TRNCOMPL0_bm | USB_EP_SETUP_bm);
+		LACR16(&(usb_xmega_endpoints[0].out.STATUS), USB_EP_TRNCOMPL0_bm | USB_EP_BUSNACK0_bm | USB_EP_SETUP_bm);
 		memcpy(&usb_setup, ep0_buf_out, sizeof(usb_setup));
 		usb_handle_setup();
-	}else if(status & USB_EP_TRNCOMPL0_bm){
-		usb_handle_control_out_complete();
+	}
+	else if (status & USB_EP_TRNCOMPL0_bm)
+	{
+		USARTC1.DATA = 0x3A;
+		LACR16(&(usb_xmega_endpoints[0].out.STATUS), USB_EP_TRNCOMPL0_bm);
+		// empty
+		//usb_handle_control_out_complete();
 	}
 
-	if (usb_xmega_endpoints[0].in.STATUS & USB_EP_TRNCOMPL0_bm) {
+	// EP0 IN (control) endpoint
+	if (usb_xmega_endpoints[0].in.STATUS & USB_EP_TRNCOMPL0_bm)
+	{
+		USARTC1.DATA = 0x2A;
 		usb_handle_control_in_complete();
+		LACR16(&usb_xmega_endpoints[0].in.STATUS, USB_EP_TRNCOMPL0_bm);
 	}
 
-	usb_cb_completion();
+	if (usb_xmega_endpoints[1].in.STATUS & USB_EP_TRNCOMPL0_bm)
+	{
+		USARTC1.DATA = 0x1A;
+		LACR16(&usb_xmega_endpoints[1].in.STATUS, USB_EP_TRNCOMPL0_bm);
+	}
+
+	// empty callback
+	//usb_cb_completion();
 }
 
