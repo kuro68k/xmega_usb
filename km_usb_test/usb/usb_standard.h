@@ -65,6 +65,9 @@ enum {
 	USB_HID_REPORT_TYPE_FEATURE = 0x03,
 };
 
+
+
+
 enum {
 	USB_FEATURE_EndpointHalt = 0x00,
 	USB_FEATURE_DeviceRemoteWakeup = 0x01,
@@ -106,9 +109,6 @@ typedef enum {
 	USB_CSCP_HIDMouseProtocol = 0x02,
 } USB_cscp;
 
-enum {
-	USB_RDTYPE_Report = 0x34,
-} USB_rdtype;
 
 #define USB_CONFIG_POWER_MA(mA) ((mA)/2)
 #define USB_STRING_LEN(s) (sizeof(USB_DescriptorHeader) + ((sizeof(s)-1) * 2))

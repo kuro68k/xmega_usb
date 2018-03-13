@@ -7,11 +7,12 @@
 #include "usb_standard.h"
 #include "usb_config.h"
 
-#define USB_EP0_SIZE 64
+#define USB_EP0_MAX_PACKET_SIZE		8
+#define USB_EP0_BUFFER_SIZE			64
 
 extern USB_SetupPacket usb_setup;
-extern uint8_t ep0_buf_in[USB_EP0_SIZE];
-extern uint8_t ep0_buf_out[USB_EP0_SIZE];
+extern uint8_t ep0_buf_in[USB_EP0_BUFFER_SIZE];
+extern uint8_t ep0_buf_out[USB_EP0_BUFFER_SIZE];
 extern volatile uint8_t USB_DeviceState;
 extern volatile uint8_t USB_Device_ConfigurationNumber;
 

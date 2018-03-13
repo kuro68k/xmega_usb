@@ -23,15 +23,15 @@ const USB_DeviceDescriptor PROGMEM device_descriptor = {
 	.bDescriptorType		= USB_DTYPE_Device,
 
 	.bcdUSB                 = 0x0200,
-#ifndef USB_HID
-	.bDeviceClass           = USB_CSCP_VendorSpecificClass,
-#else
+#ifdef USB_HID
 	.bDeviceClass           = USB_CSCP_NoDeviceClass,
+#else
+	.bDeviceClass           = USB_CSCP_VendorSpecificClass,
 #endif
 	.bDeviceSubClass        = USB_CSCP_NoDeviceSubclass,
 	.bDeviceProtocol        = USB_CSCP_NoDeviceProtocol,
 
-	.bMaxPacketSize0        = 64,
+	.bMaxPacketSize0        = USB_EP0_MAX_PACKET_SIZE,
 	.idVendor               = USB_VID,
 	.idProduct              = USB_PID,
 	.bcdDevice              = (USB_VERSION_MAJOR << 8) | (USB_VERSION_MINOR),
@@ -49,8 +49,37 @@ const USB_DeviceDescriptor PROGMEM device_descriptor = {
 
 
 /**************************************************************************************************
+ *	HID descriptor
+ */
+#ifdef USB_HID
+const __flash uint8_t hid_report_descriptor[] = {
+    0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)
+    0x09, 0x04,                    // USAGE (Joystick)
+    0xa1, 0x00,                    // COLLECTION (Physical)
+    0x05, 0x09,                    //   USAGE_PAGE (Button)
+    0x19, 0x01,                    //   USAGE_MINIMUM (Button 1)
+    0x29, 0x08,                    //   USAGE_MAXIMUM (Button 8)
+    0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
+    0x25, 0x01,                    //   LOGICAL_MAXIMUM (1)
+    0x95, 0x08,                    //   REPORT_COUNT (8)
+    0x75, 0x01,                    //   REPORT_SIZE (1)
+    0x81, 0x02,                    //   INPUT (Data,Var,Abs)
+    0x05, 0x01,                    //   USAGE_PAGE (Generic Desktop)
+    0x09, 0x30,                    //   USAGE (X)
+    0x09, 0x31,                    //   USAGE (Y)
+    0x15, 0x81,                    //   LOGICAL_MINIMUM (-127)
+    0x25, 0x7f,                    //   LOGICAL_MAXIMUM (127)
+    0x75, 0x08,                    //   REPORT_SIZE (8)
+    0x95, 0x02,                    //   REPORT_COUNT (2)
+    0x81, 0x02,                    //   INPUT (Data,Var,Abs)
+    0xc0                           // END_COLLECTION
+};
+#endif
+
+/**************************************************************************************************
  *	USB Configuration descriptor
  */
+/*
 typedef struct ConfigDesc {
 	USB_ConfigurationDescriptor Config;
 	USB_InterfaceDescriptor Interface0;
@@ -82,7 +111,7 @@ const __flash ConfigDesc configuration_descriptor = {
 		.bDescriptorType = USB_DTYPE_Interface,
 		.bInterfaceNumber = 0,
 		.bAlternateSetting = 0,
-		.bNumEndpoints = 2,
+		.bNumEndpoints = 2,			// !!! CHECK !!!
 		.bInterfaceClass = USB_CSCP_VendorSpecificClass,
 		.bInterfaceSubClass = 0x00,
 		.bInterfaceProtocol = 0x00,
@@ -126,6 +155,87 @@ const __flash ConfigDesc configuration_descriptor = {
 	},
 #endif
 };
+*/
+
+typedef struct ConfigDesc {
+	USB_ConfigurationDescriptor Config;
+	USB_InterfaceDescriptor Interface0;
+	//USB_EndpointDescriptor DataInEndpoint;
+	//USB_EndpointDescriptor DataOutEndpoint;
+	USB_HIDDescriptor		HIDDescriptor;
+	USB_EndpointDescriptor	HIDEndpoint;
+#ifdef USB_DFU_RUNTIME
+	USB_InterfaceDescriptor DFU_intf_runtime;
+	DFU_FunctionalDescriptor DFU_desc_runtime;
+#endif
+} ConfigDesc;
+
+const __flash ConfigDesc configuration_descriptor = {
+	.Config = {
+		.bLength = sizeof(USB_ConfigurationDescriptor),
+		.bDescriptorType = USB_DTYPE_Configuration,
+		.wTotalLength  = sizeof(ConfigDesc),
+#ifdef USB_DFU_RUNTIME
+		.bNumInterfaces = 2,
+#else
+		.bNumInterfaces = 1,
+#endif
+		.bConfigurationValue = 1,
+		.iConfiguration = 0,
+		.bmAttributes = USB_CONFIG_ATTR_BUSPOWERED,
+		.bMaxPower = USB_CONFIG_POWER_MA(100)
+	},
+	.Interface0 = {
+		.bLength = sizeof(USB_InterfaceDescriptor),
+		.bDescriptorType = USB_DTYPE_Interface,
+		.bInterfaceNumber = 0,
+		.bAlternateSetting = 0,
+		.bNumEndpoints = 1,
+		.bInterfaceClass = USB_CSCP_HIDClass,
+		.bInterfaceSubClass = USB_CSCP_HIDNoSubclass,
+		.bInterfaceProtocol = USB_CSCP_HIDNoProtocol,
+		.iInterface = 0
+	},
+	.HIDDescriptor = {
+		.bLength = sizeof(USB_HIDDescriptor),
+		.bDescriptorType = USB_DTYPE_HID,
+		.bcdHID = 0x0111,
+		.bCountryCode = 0,
+		.bNumDescriptors = 1,
+		.bReportDescriptorType = USB_DTYPE_Report,
+		.wDescriptorLength = sizeof(hid_report_descriptor),
+	},
+	.HIDEndpoint = {
+		.bLength = sizeof(USB_EndpointDescriptor),
+		.bDescriptorType = USB_DTYPE_Endpoint,
+		.bEndpointAddress = 0x81,
+		.bmAttributes = (USB_EP_TYPE_INTERRUPT),
+		.wMaxPacketSize = 64,
+		.bInterval = 0x08
+	},
+#ifdef USB_DFU_RUNTIME
+	.DFU_intf_runtime = {
+		.bLength = sizeof(USB_InterfaceDescriptor),
+		.bDescriptorType = USB_DTYPE_Interface,
+		.bInterfaceNumber = 1,
+		.bAlternateSetting = 0,
+		.bNumEndpoints = 0,
+		.bInterfaceClass = DFU_INTERFACE_CLASS,
+		.bInterfaceSubClass = DFU_INTERFACE_SUBCLASS,
+		.bInterfaceProtocol = DFU_INTERFACE_PROTOCOL_DFUMODE,
+		.iInterface = 0x10
+	},
+	.DFU_desc_runtime = {
+		.bLength = sizeof(DFU_FunctionalDescriptor),
+		.bDescriptorType = DFU_DESCRIPTOR_TYPE,
+		.bmAttributes = (DFU_ATTR_CANDOWNLOAD_bm | DFU_ATTR_WILLDETACH_bm),
+		.wDetachTimeout = 0,
+		.wTransferSize = APP_SECTION_PAGE_SIZE,
+		.bcdDFUVersion = 0x0101
+	},
+#endif
+};
+
 
 /**************************************************************************************************
  *	USB strings
@@ -370,7 +480,12 @@ void handle_msft_compatible(void) {
 /**************************************************************************************************
  *	USB request handling
  */
+uint8_t descriptor_buffer[128];
+
 uint16_t usb_cb_get_descriptor(uint8_t type, uint8_t index, const uint8_t** ptr) {
+	//USARTC1.DATA = type;
+	//USARTC1.DATA = index;
+
 	const void* address = NULL;
 	uint16_t size    = 0;
 
@@ -383,6 +498,16 @@ uint16_t usb_cb_get_descriptor(uint8_t type, uint8_t index, const uint8_t** ptr)
 			address = &configuration_descriptor;
 			size    = sizeof(ConfigDesc);
 			break;
+#ifdef USB_HID
+		case USB_DTYPE_HID:
+			address = &configuration_descriptor.HIDDescriptor;
+			size	= sizeof(USB_HIDDescriptor);
+			break;
+		case USB_DTYPE_Report:
+			address = &hid_report_descriptor;
+			size    = sizeof(hid_report_descriptor);
+			break;
+#endif
 		case USB_DTYPE_String:
 			switch (index) {
 				case 0x00:
@@ -415,7 +540,14 @@ uint16_t usb_cb_get_descriptor(uint8_t type, uint8_t index, const uint8_t** ptr)
 			break;
 	}
 
-	*ptr = usb_ep0_from_progmem(address, size);
+	//*ptr = usb_ep0_from_progmem(address, size);
+	*ptr = descriptor_buffer;
+	uint8_t cmd_backup = NVM.CMD;
+	NVM.CMD = 0;
+	for (uint8_t i = 0; i < size; i++)
+		descriptor_buffer[i] = pgm_read_byte(address++);
+	//memcpy_P(descriptor_buffer, address, size);
+	NVM.CMD = cmd_backup;
 	return size;
 }
 
@@ -440,24 +572,32 @@ void usb_cb_completion(void) {
 
 void usb_cb_control_setup(void) {
 	uint8_t recipient = usb_setup.bmRequestType & USB_REQTYPE_RECIPIENT_MASK;
-	if (recipient == USB_RECIPIENT_DEVICE) {
-		switch(usb_setup.bRequest) {
+	if (recipient == USB_RECIPIENT_DEVICE)
+	{
+		switch(usb_setup.bRequest)
+		{
 #ifdef USB_WCID
 			case WCID_REQUEST_ID:
 				return handle_msft_compatible();
 #endif
 		}
-	} else if (recipient == USB_RECIPIENT_INTERFACE) {
-		if (usb_setup.wIndex == 0) {			// main interface
-			switch(usb_setup.bRequest) {
+	}
+	else if (recipient == USB_RECIPIENT_INTERFACE)
+	{
+		if (usb_setup.wIndex == 0)
+		{			// main interface
+			switch(usb_setup.bRequest)
+			{
 #ifdef USB_WCID_EXTENDED
 				case WCID_REQUEST_ID:
 					return handle_msft_compatible();
 #endif
 			}
-		} else if (usb_setup.wIndex == 1) {		// DFU interface
-			return dfu_control_setup();
 		}
+#ifdef USB_DFU_RUNTIME
+		else if (usb_setup.wIndex == 1)		// DFU interface
+			return dfu_control_setup();
+#endif
 	}
 
 	return usb_ep0_stall();
