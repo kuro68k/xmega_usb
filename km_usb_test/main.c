@@ -48,7 +48,7 @@ int main(void)
 	uint8_t *buffer = hid_get_report_buffer();
 	for(;;)
 	{
-		_delay_ms(500);
+		_delay_ms(50);
 		buffer[1]++;
 		//if (usb_ep_ready(0x81))
 			//asm("nop");

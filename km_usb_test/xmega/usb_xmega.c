@@ -95,10 +95,10 @@ const uint8_t* usb_ep0_from_progmem(const uint8_t* addr, uint16_t size) {
 
 inline void usb_ep_enable(uint8_t ep, uint8_t type, usb_size bufsize){
 	_USB_EP(ep);
-	//e->STATUS = USB_EP_BUSNACK0_bm | USB_EP_TRNCOMPL0_bm;
-	LACR16(&(e->STATUS), USB_EP_BUSNACK0_bm );//| USB_EP_TRNCOMPL0_bm);
+	e->STATUS = USB_EP_BUSNACK0_bm | USB_EP_TRNCOMPL0_bm;
+	//LACR16(&(e->STATUS), USB_EP_BUSNACK0_bm );//| USB_EP_TRNCOMPL0_bm);
 	//e->CTRL = (type << USB_EP_TYPE_gp) | USB_EP_size_to_gc(bufsize);
-	e->CTRL = type | USB_EP_size_to_gc(bufsize);
+	e->CTRL = type | USB_EP_size_to_gc(bufsize) | USB_EP_INTDSBL_bm;
 }
 
 inline void usb_ep_disable(uint8_t ep) {
@@ -108,13 +108,13 @@ inline void usb_ep_disable(uint8_t ep) {
 
 inline void usb_ep_reset(uint8_t ep){
 	_USB_EP(ep);
-	e->STATUS = USB_EP_BUSNACK0_bm;
+	e->STATUS = USB_EP_BUSNACK0_bm | USB_EP_TRNCOMPL0_bm;
 }
 
 inline usb_bank usb_ep_start_out(uint8_t ep, uint8_t* data, usb_size len) {
 	_USB_EP(ep);
 	e->DATAPTR = (unsigned) data;
-	LACR16(&(e->STATUS), USB_EP_BUSNACK0_bm);// | USB_EP_TRNCOMPL0_bm);
+	LACR16(&(e->STATUS), USB_EP_BUSNACK0_bm | USB_EP_TRNCOMPL0_bm);
 	return 0;
 }
 
@@ -129,7 +129,8 @@ inline usb_bank usb_ep_start_in(uint8_t ep, const uint8_t* data, usb_size size, 
 
 inline bool usb_ep_ready(uint8_t ep) {
 	_USB_EP(ep);
-	return !(e->STATUS & (USB_EP_BUSNACK0_bm | USB_EP_TRNCOMPL0_bm));
+	//return !(e->STATUS & (USB_EP_BUSNACK0_bm | USB_EP_TRNCOMPL0_bm));
+	return !(e->STATUS & USB_EP_TRNCOMPL0_bm);
 }
 
 inline bool usb_ep_empty(uint8_t ep) {
@@ -249,11 +250,6 @@ ISR(USB_BUSEVENT_vect)
 
 ISR(USB_TRNCOMPL_vect)
 {
-	//USARTC1.DATA = 0x0A;
-
-
-
-
 	USB.FIFOWP = 0;	// clear TCIF????
 	USB.INTFLAGSBCLR = USB_SETUPIF_bm | USB_TRNIF_bm;
 
