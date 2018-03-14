@@ -197,15 +197,6 @@ void usb_handle_setup(void)
 	}
 }
 
-void usb_handle_control_out_complete(void) {
-	if ((usb_setup.bmRequestType & USB_REQTYPE_TYPE_MASK) == USB_REQTYPE_STANDARD) {
-		// Let the status stage proceed
-	} else {
-		// empty callback
-		//usb_cb_control_out_completion();
-	}
-}
-
 void usb_handle_msft_compatible(const USB_MicrosoftCompatibleDescriptor* msft_compatible) {
 	if (usb_setup.wIndex == 0x0004) {
 		uint16_t len = usb_setup.wLength;
