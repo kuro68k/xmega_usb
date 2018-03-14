@@ -1,3 +1,12 @@
+/* usb_xmega.c
+ *
+ * Copyright 2011-2014 Nonolith Labs
+ * Copyright 2014 Technical Machine
+ * Copyright 2017-2018 Paul Qureshi
+ *
+ * Handle supported USB requests
+ */
+
 #include <avr/io.h>
 #include "usb.h"
 #include "usb_config.h"
@@ -6,30 +15,6 @@ USB_SetupPacket usb_setup;
 __attribute__((__aligned__(4))) uint8_t ep0_buf_in[USB_EP0_BUFFER_SIZE];
 __attribute__((__aligned__(4))) uint8_t ep0_buf_out[USB_EP0_BUFFER_SIZE];
 volatile uint8_t usb_configuration;
-
-uint16_t usb_ep0_in_byte_count;
-const uint8_t* usb_ep0_in_ptr;
-
-// handle multi-packet transfers for endpoint 0
-// called in transaction complete interrupt
-void usb_ep0_in_multi(void) {
-	uint16_t tsize = usb_ep0_in_byte_count;
-
-	if (tsize > USB_EP0_MAX_PACKET_SIZE) {
-		tsize = USB_EP0_MAX_PACKET_SIZE;
-	}
-
-	memcpy(ep0_buf_in, usb_ep0_in_ptr, tsize);
-	usb_ep_start_in(0x80, ep0_buf_in, tsize, false);
-
-	if (tsize == 0) {
-		usb_ep0_out();
-	}
-
-	usb_ep0_in_byte_count -= tsize;
-	usb_ep0_in_ptr += tsize;
-}
-
 
 /* Handle standard setup packet device requests
  */
