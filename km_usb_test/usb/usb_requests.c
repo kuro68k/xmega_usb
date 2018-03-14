@@ -197,19 +197,20 @@ void usb_handle_setup(void)
 	}
 }
 
-void usb_handle_msft_compatible(const USB_MicrosoftCompatibleDescriptor* msft_compatible) {
-	if (usb_setup.wIndex == 0x0004) {
+void usb_handle_msft_compatible(const USB_MicrosoftCompatibleDescriptor* msft_compatible)
+{
+	if (usb_setup.wIndex == 0x0004)
+	{
 		uint16_t len = usb_setup.wLength;
-		if (len > msft_compatible->dwLength) {
+		if (len > msft_compatible->dwLength)
 			len = msft_compatible->dwLength;
-		}
-		if (len > USB_EP0_MAX_PACKET_SIZE) {
+		if (len > USB_EP0_MAX_PACKET_SIZE)
 			len = USB_EP0_MAX_PACKET_SIZE;
-		}
+
 		memcpy(ep0_buf_in, msft_compatible, len);
 		usb_ep_start_in(0x80, ep0_buf_in, len, false);
 		return usb_ep0_out();
-	} else {
-		return usb_ep0_stall();
 	}
+
+	return usb_ep0_stall();
 }
