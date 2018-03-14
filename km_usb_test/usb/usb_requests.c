@@ -10,6 +10,7 @@
 #include <avr/io.h>
 #include "usb.h"
 #include "usb_config.h"
+#include "hid.h"
 
 USB_SetupPacket usb_setup;
 __attribute__((__aligned__(4))) uint8_t ep0_buf_in[USB_EP0_BUFFER_SIZE];
@@ -17,7 +18,7 @@ __attribute__((__aligned__(4))) uint8_t ep0_buf_out[USB_EP0_BUFFER_SIZE];
 volatile uint8_t usb_configuration;
 
 /**************************************************************************************************
-* Handle standard setup packet device requests
+* Handle standard setup requests
 */
 void usb_handle_standard_setup_requests(void)
 {
@@ -89,8 +90,9 @@ void usb_handle_standard_setup_requests(void)
 	}
 }
 
-/* Handle class setup packet device requests
- */
+/**************************************************************************************************
+* Handle class setup requests
+*/
 void usb_handle_class_setup_requests(void)
 {
 #ifdef USB_HID
@@ -121,8 +123,10 @@ void usb_handle_class_setup_requests(void)
 			switch(usb_setup.wValue >> 8)
 			{
 				case USB_HID_REPORT_TYPE_INPUT:
-					bytes_in = hid_cb_get_report_input(ep0_buf_in, usb_setup.wValue & 0xFF);
-					break;
+					hid_send_report();
+					return usb_ep0_out();
+					//bytes_in = hid_cb_get_report_input(ep0_buf_in, usb_setup.wValue & 0xFF);
+					//break;
 				case USB_HID_REPORT_TYPE_OUTPUT:
 					bytes_in = hid_cb_get_report_output(ep0_buf_in, usb_setup.wValue & 0xFF);
 					break;
@@ -130,9 +134,6 @@ void usb_handle_class_setup_requests(void)
 					bytes_in = hid_cb_get_report_feature(ep0_buf_in, usb_setup.wValue & 0xFF);
 					break;
 			}
-			PORTC.OUTCLR = PIN4_bm;
-			PORTC.OUTSET = PIN4_bm;
-			USARTC1.DATA = bytes_in;
 			if (bytes_in == -1)
 				return usb_ep0_stall();
 			usb_ep0_in(bytes_in);
@@ -166,14 +167,11 @@ void usb_handle_class_setup_requests(void)
 		case USB_HIDREQ_SET_IDLE:
 			usb_ep0_in(0);
 			return usb_ep0_out();
-			//return usb_ep0_stall();
 
 		case USB_HIDREQ_SET_PROTOCOL:
-			USARTC1.DATA = 0x57;
 			return usb_ep0_stall();
 
 		default:
-			USARTC1.DATA = 0x56;
 			return usb_ep0_stall();
 	}
 #else

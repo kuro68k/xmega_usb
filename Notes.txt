@@ -9,6 +9,13 @@ EP0_BUFFER_SIZE must be large enough for all descriptors.
 
 
 
+HID
+===============================================================================
+
+Write reports into hid_report. Call hid_send_report() to send report on next
+poll.
+
+
 
 To do:
 

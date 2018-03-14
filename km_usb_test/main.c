@@ -44,15 +44,12 @@ int main(void)
 	//usb_ep_enable(0x81, USB_EP_TYPE_BULK_gc, 64);	// interrupt == bulk (see manual)
 
 #ifdef USB_HID
-	hid_set_report_size(4);
-	uint8_t *buffer = hid_get_report_buffer();
 	for(;;)
 	{
+		for (uint8_t i = 0; i < USB_HID_REPORT_SIZE; i++)
+			hid_report[i] += (i+1);
 		_delay_ms(50);
-		buffer[1]++;
-		//if (usb_ep_ready(0x81))
-			//asm("nop");
-			hid_send_report();
+		hid_send_report();
 	}
 #endif
 	for(;;);

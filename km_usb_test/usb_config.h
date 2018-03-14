@@ -42,7 +42,7 @@
 /* Enable HID, otherwise vendor specific
  */
 #define USB_HID
-#define USB_MAX_PACKET_SIZE		64
+#define USB_HID_REPORT_SIZE		3
 
 
 /* USB clock configuration
