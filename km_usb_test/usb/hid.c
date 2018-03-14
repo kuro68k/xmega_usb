@@ -21,7 +21,7 @@ void hid_send_report(void)
 	for (uint8_t i = 0; i < 8; i++)
 		hid_report[i] += (i+1);
 
-	if (usb_ep_ready(0x81))
+	if (usb_ep_is_ready(0x81))
 		usb_ep_start_in(0x81, hid_report, 3, false);
 }
 

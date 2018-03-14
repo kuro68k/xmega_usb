@@ -61,18 +61,13 @@ void usb_set_stall_ep(usb_ep ep);
 void usb_clr_stall_ep(usb_ep ep);
 
 /// Returns true if an endpoint can start or queue a transfer
-bool usb_ep_ready(usb_ep ep);
-
-inline void usb_ep_wait_for_ready(uint8_t ep){
-	while (!usb_ep_ready(ep)) {};
-}
+bool usb_ep_is_ready(usb_ep ep);
 
 /// Returns true if there is a completion pending on the endpoint
-bool usb_ep_pending(usb_ep ep);
+bool usb_ep_is_transaction_complete(usb_ep ep);
 
-inline void usb_ep_wait_for_pending(uint8_t ep){
-	while (!usb_ep_pending(ep)) {};
-}
+/// Clear a completion on an endpoint
+void usb_ep_handle_transaction(usb_ep ep);
 
 /// Start an asynchronous host->device transfer.
 /// The data will be received into data up to size len. This buffer must remain valid until
@@ -80,7 +75,7 @@ inline void usb_ep_wait_for_pending(uint8_t ep){
 void usb_ep_start_out(usb_ep ep, uint8_t* data, usb_size len);
 
 /// Gets the length of a pending completion on an OUT endpoint
-usb_size usb_ep_out_length(usb_ep ep);
+usb_size usb_ep_get_out_transaction_length(usb_ep ep);
 
 /// Start an asynchronous device->host transfer.
 /// The data will be sent from the data buffer. This buffer must remain valid until the
@@ -88,8 +83,6 @@ usb_size usb_ep_out_length(usb_ep ep);
 /// size, an extra zero-length packet will be sent to terminate the transfer.
 void usb_ep_start_in(uint8_t ep, const uint8_t* data, usb_size size, bool zlp);
 
-/// Clear a completion on an endpoint
-void usb_ep_handled(usb_ep ep);
 
 /// Send `size` bytes from ep0_buf_in on endpoint 0
 void usb_ep0_in(uint8_t size);
@@ -99,12 +92,6 @@ void usb_ep0_out(void);
 
 /// Stall endpoint 0
 void usb_ep0_stall(void);
-
-/// Force the maximum speed. Call before usb_attach()
-void usb_set_speed(USB_Speed speed);
-
-/// Gets the currently-connected speed
-USB_Speed usb_get_speed(void);
 
 /// Handle a vendor request for a Microsoft WCID compatible descriptor.
 /// bmRequestType is vendor/device, and bRequest is user-defined in the string descriptor, so

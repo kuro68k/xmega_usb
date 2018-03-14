@@ -143,59 +143,80 @@ inline void usb_ep_start_in(uint8_t ep, const uint8_t* data, usb_size size, bool
 /**************************************************************************************************
 * Check if an endpoint is ready to start the next transaction
 */
-inline bool usb_ep_ready(uint8_t ep)
+inline bool usb_ep_is_ready(uint8_t ep)
 {
 	_USB_EP(ep);
 	return !(e->STATUS & USB_EP_TRNCOMPL0_bm);
 }
 
-inline bool usb_ep_empty(uint8_t ep) {
-	_USB_EP(ep);
-	return !(e->STATUS & (USB_EP_BUSNACK0_bm | USB_EP_TRNCOMPL0_bm));
-}
-
-inline bool usb_ep_pending(uint8_t ep) {
+/**************************************************************************************************
+* Check if an unhandled transaction has completed on an endpoint
+*/
+inline bool usb_ep_is_transaction_complete(uint8_t ep)
+{
 	_USB_EP(ep);
 	return e->STATUS & USB_EP_TRNCOMPL0_bm;
 }
 
-inline void usb_ep_handled(uint8_t ep) {
+/**************************************************************************************************
+* Handle a completed transaction on an endpoint
+*/
+inline void usb_ep_handle_transaction(uint8_t ep)
+{
 	_USB_EP(ep);
 	LACR16(&(e->STATUS), USB_EP_TRNCOMPL0_bm);
 }
 
-inline uint16_t usb_ep_out_length(uint8_t ep){
+/**************************************************************************************************
+* Get the number of bytes available from a completed transaction on an OUT endpoint
+*/
+inline uint16_t usb_ep_get_out_transaction_length(uint8_t ep)
+{
 	_USB_EP(ep);
 	return e->CNT;
 }
 
+/**************************************************************************************************
+* Physically detach from USB bus
+*/
 inline void usb_detach(void) ATTR_ALWAYS_INLINE;
 inline void usb_detach(void) {
 	USB.CTRLB &= ~USB_ATTACH_bm;
 }
 
+/**************************************************************************************************
+* Physically attach to USB bus
+*/
 inline void usb_attach(void) ATTR_ALWAYS_INLINE;
 inline void usb_attach(void) {
 	USB.CTRLB |= USB_ATTACH_bm;
 }
 
-/// Enable the OUT stage on the default control pipe.
+/**************************************************************************************************
+* Enable the OUT stage on the default control pipe
+*/
 inline void usb_ep0_out(void) {
 	LACR16(&usb_xmega_endpoints[0].out.STATUS, USB_EP_SETUP_bm | USB_EP_BUSNACK0_bm | USB_EP_TRNCOMPL0_bm | USB_EP_OVF_bm);
 }
 
+/**************************************************************************************************
+* Enable the IN stage on the default control pipe
+*/
 inline void usb_ep0_in(uint8_t size){
 	usb_ep_start_in(0x80, ep0_buf_in, size, true);
 }
 
+/**************************************************************************************************
+* Stall the default control pipe
+*/
 inline void usb_ep0_stall(void) {
 	usb_xmega_endpoints[0].out.CTRL |= USB_EP_STALL_bm;
 	usb_xmega_endpoints[0].in.CTRL  |= USB_EP_STALL_bm;
 }
 
-void usb_set_speed(USB_Speed speed) { }
-USB_Speed usb_get_speed() { return USB_SPEED_FULL; }
-
+/**************************************************************************************************
+* Set up the main CPU clock and USB clock
+*/
 void usb_configure_clock()
 {
 #ifdef USB_USE_PLL
@@ -246,37 +267,43 @@ void usb_configure_clock()
 #endif
 }
 
+/**************************************************************************************************
+* Handle bus event interrupts
+*/
 ISR(USB_BUSEVENT_vect)
 {
-	USARTC1.DATA = 0x0B;
-	if (USB.INTFLAGSACLR & USB_SOFIF_bm)
-		USB.INTFLAGSACLR = USB_SOFIF_bm;
-
 	if (USB.INTFLAGSACLR & (USB_CRCIF_bm | USB_UNFIF_bm | USB_OVFIF_bm))	// CRC error, under/overflow
 		USB.INTFLAGSACLR = USB_CRCIF_bm | USB_UNFIF_bm | USB_OVFIF_bm;
 
 	if (USB.INTFLAGSACLR & USB_STALLIF_bm)
 		USB.INTFLAGSACLR = USB_STALLIF_bm;
 
+	// USB bus reset signal
 	if (USB.INTFLAGSASET & USB_RSTIF_bm)
 	{
 		USB.INTFLAGSACLR = USB_RSTIF_bm;
 		usb_reset();
 	}
 
+	// start of frame, unused
+	//if (USB.INTFLAGSACLR & USB_SOFIF_bm)
+	//	USB.INTFLAGSACLR = USB_SOFIF_bm;
+
 	USB.INTFLAGSACLR = USB_SUSPENDIF_bm | USB_RESUMEIF_bm;
 }
 
+/**************************************************************************************************
+* Handle transaction complete interrupts
+*/
 ISR(USB_TRNCOMPL_vect)
 {
-	USB.FIFOWP = 0;	// clear TCIF????
+	USB.FIFOWP = 0;	// clear TCIF
 	USB.INTFLAGSBCLR = USB_SETUPIF_bm | USB_TRNIF_bm;
 
-	// Read once to prevent race condition where SETUP packet is interpreted as OUT
-	uint8_t status = usb_xmega_endpoints[0].out.STATUS;
+	// Endpoint 0 (default control endpoint)
+	uint8_t status = usb_xmega_endpoints[0].out.STATUS;		// Read once to prevent race condition
 	if (status & USB_EP_SETUP_bm)
 	{
-		USARTC1.DATA = 0x4A;
 		// TODO: race conditions because we can't block a setup packet
 		LACR16(&(usb_xmega_endpoints[0].out.STATUS), USB_EP_TRNCOMPL0_bm | USB_EP_BUSNACK0_bm | USB_EP_SETUP_bm);
 		memcpy(&usb_setup, ep0_buf_out, sizeof(usb_setup));
@@ -284,7 +311,6 @@ ISR(USB_TRNCOMPL_vect)
 	}
 	else if (status & USB_EP_TRNCOMPL0_bm)
 	{
-		USARTC1.DATA = 0x3A;
 		LACR16(&(usb_xmega_endpoints[0].out.STATUS), USB_EP_TRNCOMPL0_bm);
 		// empty
 		//usb_handle_control_out_complete();
@@ -293,18 +319,15 @@ ISR(USB_TRNCOMPL_vect)
 	// EP0 IN (control) endpoint
 	if (usb_xmega_endpoints[0].in.STATUS & USB_EP_TRNCOMPL0_bm)
 	{
-		USARTC1.DATA = 0x2A;
 		usb_handle_control_in_complete();
 		LACR16(&usb_xmega_endpoints[0].in.STATUS, USB_EP_TRNCOMPL0_bm);
 	}
 
 	if (usb_xmega_endpoints[1].in.STATUS & USB_EP_TRNCOMPL0_bm)
 	{
-		USARTC1.DATA = 0x1A;
 		LACR16(&usb_xmega_endpoints[1].in.STATUS, USB_EP_TRNCOMPL0_bm);
 	}
 
 	// empty callback
 	//usb_cb_completion();
 }
-

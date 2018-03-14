@@ -263,10 +263,12 @@ void usb_handle_control_in_complete(void)
 			//	usb_ep0_in_multi();
 			//	return;
 		}
-	} else {
+	}
+/*	else
+	{
 		// empty
 		//usb_cb_control_in_completion();
-	}
+	}*/
 }
 
 void usb_handle_msft_compatible(const USB_MicrosoftCompatibleDescriptor* msft_compatible) {

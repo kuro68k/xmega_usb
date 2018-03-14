@@ -1,0 +1,2 @@
+- FIFO not supported
+- SOF interrupt not enabled
