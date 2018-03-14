@@ -11,7 +11,7 @@
 /* USB vendor and product IDs, version number
  */
 #define USB_VID				0x9999
-#define USB_PID				0x005C
+#define USB_PID				0x005D
 
 #define USB_VERSION_MAJOR	1
 #define USB_VERSION_MINOR	0
@@ -50,7 +50,6 @@
 #define USB_USE_PLL			// configure in usb_configure_clock() in usb_xmega.c
 //#define USB_USE_RC32
 
-//#define USB_LOW_SPEED
 
 /* DFU callbacks
  */

@@ -16,16 +16,18 @@ __attribute__((__aligned__(4))) uint8_t ep0_buf_in[USB_EP0_BUFFER_SIZE];
 __attribute__((__aligned__(4))) uint8_t ep0_buf_out[USB_EP0_BUFFER_SIZE];
 volatile uint8_t usb_configuration;
 
-/* Handle standard setup packet device requests
- */
+/**************************************************************************************************
+* Handle standard setup packet device requests
+*/
 void usb_handle_standard_setup_requests(void)
 {
-//	USARTC1.DATA = 0xAA;
-//	USARTC1.DATA = usb_setup.bRequest;
-
 	switch (usb_setup.bRequest)
 	{
 		case USB_REQ_GetStatus:
+			// Device:		D0	Self powered
+			//				D1	Remote wake-up
+			// Interface:	(all reserved)
+			// Endpoint:	D0 endpoint halted
 			ep0_buf_in[0] = 0;
 			ep0_buf_in[1] = 0;
 			usb_ep0_in(2);
@@ -33,11 +35,13 @@ void usb_handle_standard_setup_requests(void)
 
 		case USB_REQ_ClearFeature:
 		case USB_REQ_SetFeature:
-			USARTC1.DATA = 0x5F;
+			// not implemented
 			usb_ep0_in(0);
 			return usb_ep0_out();
 
 		case USB_REQ_SetAddress:
+			// USB.ADDR must only change after the IN transaction has completed,
+			// see USB_TRNCOMPL_vect vector
 			usb_ep0_in(0);
 			return usb_ep0_out();
 
@@ -233,27 +237,6 @@ void usb_handle_control_out_complete(void) {
 		// empty callback
 		//usb_cb_control_out_completion();
 	}
-}
-
-void usb_handle_control_in_complete(void)
-{
-	if ((usb_setup.bmRequestType & USB_REQTYPE_TYPE_MASK) == USB_REQTYPE_STANDARD)
-	{
-		switch (usb_setup.bRequest)
-		{
-			case USB_REQ_SetAddress:
-				USB.ADDR = usb_setup.wValue & 0x7F;
-				return;
-			//case USB_REQ_GetDescriptor:
-			//	usb_ep0_in_multi();
-			//	return;
-		}
-	}
-/*	else
-	{
-		// empty
-		//usb_cb_control_in_completion();
-	}*/
 }
 
 void usb_handle_msft_compatible(const USB_MicrosoftCompatibleDescriptor* msft_compatible) {

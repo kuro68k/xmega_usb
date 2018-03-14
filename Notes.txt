@@ -1,2 +1,9 @@
+
+
 - FIFO not supported
 - SOF interrupt not enabled
+
+
+To do:
+
+- Reduce EP0 buffer size, perhaps to max descriptor size

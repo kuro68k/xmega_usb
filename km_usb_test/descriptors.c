@@ -483,9 +483,6 @@ void handle_msft_compatible(void) {
 uint8_t descriptor_buffer[128];
 
 uint16_t usb_cb_get_descriptor(uint8_t type, uint8_t index, const uint8_t** ptr) {
-	//USARTC1.DATA = type;
-	//USARTC1.DATA = index;
-
 	const void* address = NULL;
 	uint16_t size    = 0;
 

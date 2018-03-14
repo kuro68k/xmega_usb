@@ -319,7 +319,14 @@ ISR(USB_TRNCOMPL_vect)
 	// EP0 IN (control) endpoint
 	if (usb_xmega_endpoints[0].in.STATUS & USB_EP_TRNCOMPL0_bm)
 	{
-		usb_handle_control_in_complete();
+		// SET_ADDRESS requests must only take effect after the response IN packet has
+		// been sent.
+		if ((usb_setup.bmRequestType & USB_REQTYPE_TYPE_MASK) == USB_REQTYPE_STANDARD)
+		{
+			if (usb_setup.bRequest == USB_REQ_SetAddress)
+					USB.ADDR = usb_setup.wValue & 0x7F;
+		}
+		//usb_handle_control_in_complete();
 		LACR16(&usb_xmega_endpoints[0].in.STATUS, USB_EP_TRNCOMPL0_bm);
 	}
 
