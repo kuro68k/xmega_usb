@@ -61,6 +61,7 @@ void usb_handle_standard_setup_requests(void)
 			else
 				return usb_ep0_stall();
 		}
+
 		case USB_REQ_GetConfiguration:
 			ep0_buf_in[0] = usb_configuration;
 			usb_ep0_in(1);
@@ -84,7 +85,6 @@ void usb_handle_standard_setup_requests(void)
 			return usb_ep0_stall();
 
 		default:
-			USARTC1.DATA = 0x55;
 			return usb_ep0_stall();
 	}
 }
@@ -93,18 +93,15 @@ void usb_handle_standard_setup_requests(void)
  */
 void usb_handle_class_setup_requests(void)
 {
-//	USARTC1.DATA = 0xBB;
-//	USARTC1.DATA = usb_setup.bRequest;
-
 #ifdef USB_HID
 	switch (usb_setup.bRequest)
 	{
 		// IN requests
+/*
 		case USB_REQ_GetDescriptor:
 		{
 			uint8_t type = usb_setup.wValue >> 8;
 			uint8_t index = usb_setup.wValue & 0xFF;
-			//const uint8_t* descriptor = 0;
 			uint16_t size = usb_cb_get_descriptor(type, index);
 
 			if (size)
@@ -117,7 +114,7 @@ void usb_handle_class_setup_requests(void)
 			else
 				return usb_ep0_stall();
 		}
-
+*/
 		case USB_HIDREQ_GET_REPORT:
 		{
 			uint16_t bytes_in = -1;
