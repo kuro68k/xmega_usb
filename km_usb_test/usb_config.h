@@ -70,15 +70,11 @@ static inline void dfu_runtime_cb_enter_dfu_mode(void)
 
 // GET_REPORT handlers. *report is USB_MAX_PACKET_SIZE.
 // Return number of bytes in report, or -1 if not supported
+/*
 static inline uint16_t hid_cb_get_report_input(uint8_t *report, uint8_t report_id)
 {
-	report[0] = 1;
-	report[1] = 99;
-	report[2] = 77;
-	report[3] = 55;
-	return 4;
-	//return -1;
-}
+	return -1;
+}*/
 
 static inline uint16_t hid_cb_get_report_output(uint8_t *report, uint8_t report_id)
 {
