@@ -480,13 +480,12 @@ void handle_msft_compatible(void) {
 /**************************************************************************************************
  *	USB request handling
  */
-uint8_t descriptor_buffer[128];
-
 uint16_t usb_cb_get_descriptor(uint8_t type, uint8_t index, const uint8_t** ptr) {
 	const void* address = NULL;
-	uint16_t size    = 0;
+	uint16_t size = 0;
 
-	switch (type) {
+	switch (type)
+	{
 		case USB_DTYPE_Device:
 			address = &device_descriptor;
 			size    = sizeof(USB_DeviceDescriptor);
@@ -537,13 +536,11 @@ uint16_t usb_cb_get_descriptor(uint8_t type, uint8_t index, const uint8_t** ptr)
 			break;
 	}
 
-	//*ptr = usb_ep0_from_progmem(address, size);
-	*ptr = descriptor_buffer;
+	*ptr = ep0_buf_in;
 	uint8_t cmd_backup = NVM.CMD;
 	NVM.CMD = 0;
 	for (uint8_t i = 0; i < size; i++)
-		descriptor_buffer[i] = pgm_read_byte(address++);
-	//memcpy_P(descriptor_buffer, address, size);
+		ep0_buf_in[i] = pgm_read_byte(address++);
 	NVM.CMD = cmd_backup;
 	return size;
 }
