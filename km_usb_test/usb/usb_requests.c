@@ -49,28 +49,14 @@ void usb_handle_standard_setup_requests(void)
 		{
 			uint8_t type = usb_setup.wValue >> 8;
 			uint8_t index = usb_setup.wValue & 0xFF;
-			const uint8_t* descriptor = 0;
-			uint16_t size = usb_cb_get_descriptor(type, index, &descriptor);
+			uint16_t size = usb_cb_get_descriptor(type, index);
 
-			if (size && descriptor)
+			if (size)
 			{
 				if (size > usb_setup.wLength)	// host requested partial descriptor
 					size = usb_setup.wLength;
 
-				usb_ep_start_in(0x80, descriptor, size, true);
-/*				if (descriptor == ep0_buf_in)
-				{
-					usb_ep0_in_byte_count = 0;
-					usb_ep_start_in(0x80, ep0_buf_in, size, false);
-				}
-				else
-				{
-					usb_ep0_in_byte_count = size;
-					usb_ep0_in_ptr = descriptor;
-					usb_ep0_in_multi();
-				}
-*/
-				return;
+				return usb_ep_start_in(0x80, ep0_buf_in, size, true);
 			}
 			else
 				return usb_ep0_stall();
@@ -118,29 +104,15 @@ void usb_handle_class_setup_requests(void)
 		{
 			uint8_t type = usb_setup.wValue >> 8;
 			uint8_t index = usb_setup.wValue & 0xFF;
-			const uint8_t* descriptor = 0;
-			uint16_t size = usb_cb_get_descriptor(type, index, &descriptor);
+			//const uint8_t* descriptor = 0;
+			uint16_t size = usb_cb_get_descriptor(type, index);
 
-			if (size && descriptor)
+			if (size)
 			{
 				if (size > usb_setup.wLength)
 					size = usb_setup.wLength;
 
-				usb_ep_start_in(0x80, ep0_buf_in, size, true);
-				/*
-				if (descriptor == ep0_buf_in)
-				{
-					usb_ep0_in_byte_count = 0;
-					usb_ep_start_in(0x80, ep0_buf_in, size, true);
-				}
-				else
-				{
-					usb_ep0_in_byte_count = size;
-					usb_ep0_in_ptr = descriptor;
-					usb_ep0_in_multi();
-				}*/
-
-				return;
+				return usb_ep_start_in(0x80, ep0_buf_in, size, true);
 			}
 			else
 				return usb_ep0_stall();

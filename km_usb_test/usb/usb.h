@@ -30,7 +30,7 @@ bool usb_cb_set_configuration(uint8_t config);
 bool usb_cb_set_interface(uint16_t interface, uint16_t altsetting);
 
 /// Callbck for a GET_DESCRIPTOR request
-uint16_t usb_cb_get_descriptor(uint8_t type, uint8_t index, const uint8_t** descriptor_ptr);
+uint16_t usb_cb_get_descriptor(uint8_t type, uint8_t index);
 
 /// Initialize the USB controller
 void usb_init(void);

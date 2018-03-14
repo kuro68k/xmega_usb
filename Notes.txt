@@ -1,9 +1,16 @@
-
+Additional compiler flags:
+	-std=gnu99 -fno-strict-aliasing -Wstrict-prototypes -fno-jump-tables
 
 - FIFO not supported
 - SOF interrupt not enabled
 
 
+EP0_BUFFER_SIZE must be large enough for all descriptors.
+
+
+
+
 To do:
 
 - Reduce EP0 buffer size, perhaps to max descriptor size
+- Improve serial string generation and remove serial_string struct

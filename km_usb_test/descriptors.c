@@ -1,4 +1,5 @@
 #include <avr/pgmspace.h>
+#include <string.h>
 #include "xmega/usb_xmega.h"
 #include "dfu.h"
 #include "usb_config.h"
@@ -480,7 +481,7 @@ void handle_msft_compatible(void) {
 /**************************************************************************************************
  *	USB request handling
  */
-uint16_t usb_cb_get_descriptor(uint8_t type, uint8_t index, const uint8_t** ptr) {
+uint16_t usb_cb_get_descriptor(uint8_t type, uint8_t index) {
 	const void* address = NULL;
 	uint16_t size = 0;
 
@@ -518,7 +519,7 @@ uint16_t usb_cb_get_descriptor(uint8_t type, uint8_t index, const uint8_t** ptr)
 #ifdef USB_SERIAL_NUMBER
 				case 0x03:
 					generate_serial();
-					*ptr = (uint8_t *)&serial_string;
+					memcpy(ep0_buf_in, &serial_string, sizeof(serial_string));
 					return serial_string.bLength;
 #endif
 #ifdef USB_DFU_RUNTIME
@@ -536,7 +537,6 @@ uint16_t usb_cb_get_descriptor(uint8_t type, uint8_t index, const uint8_t** ptr)
 			break;
 	}
 
-	*ptr = ep0_buf_in;
 	uint8_t cmd_backup = NVM.CMD;
 	NVM.CMD = 0;
 	for (uint8_t i = 0; i < size; i++)
