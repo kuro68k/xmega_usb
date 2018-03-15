@@ -6,6 +6,8 @@
  */
 
 #include <avr/pgmspace.h>
+#include <avr/interrupt.h>
+#include <util/delay.h>
 #include <string.h>
 #include "xmega/usb_xmega.h"
 #include "dfu.h"
@@ -22,6 +24,7 @@
 #define WCID_REQUEST_ID_STR		u"\x22"
 
 USB_ENDPOINTS(1);
+
 
 /**************************************************************************************************
 * USB Device descriptor
@@ -123,6 +126,7 @@ const __flash ConfigDesc configuration_descriptor = {
 		.bmAttributes = USB_CONFIG_ATTR_BUSPOWERED,
 		.bMaxPower = USB_CONFIG_POWER_MA(100)
 	},
+#ifdef USB_HID
 	.Interface0 = {
 		.bLength = sizeof(USB_InterfaceDescriptor),
 		.bDescriptorType = USB_DTYPE_Interface,
@@ -134,7 +138,6 @@ const __flash ConfigDesc configuration_descriptor = {
 		.bInterfaceProtocol = USB_CSCP_HIDNoProtocol,
 		.iInterface = 0
 	},
-#ifdef USB_HID
 	.HIDDescriptor = {
 		.bLength = sizeof(USB_HIDDescriptor),
 		.bDescriptorType = USB_DTYPE_HID,
@@ -153,6 +156,17 @@ const __flash ConfigDesc configuration_descriptor = {
 		.bInterval = 0x08
 	},
 #else
+	.Interface0 = {
+		.bLength = sizeof(USB_InterfaceDescriptor),
+		.bDescriptorType = USB_DTYPE_Interface,
+		.bInterfaceNumber = 0,
+		.bAlternateSetting = 0,
+		.bNumEndpoints = 2,
+		.bInterfaceClass = USB_CSCP_VendorSpecificClass,
+		.bInterfaceSubClass = 0x00,
+		.bInterfaceProtocol = 0x00,
+		.iInterface = 0
+	},
 	.DataInEndpoint = {
 		.bLength = sizeof(USB_EndpointDescriptor),
 		.bDescriptorType = USB_DTYPE_Endpoint,
@@ -223,18 +237,19 @@ const __flash USB_StringDescriptor product_string = {
  *	Optional serial number
  */
 #ifdef USB_SERIAL_NUMBER
+/*
 USB_StringDescriptor serial_string = {
 	.bLength = 22*2,
 	.bDescriptorType = USB_DTYPE_String,
-	.bString = u"0000000000000000000000"
-};
+	.bString = u"0123456789ABCDEFGHIJKL"
+};*/
 
-const __flash char hexlut[] = "0123456789ABCDEF";
 void byte2char16(uint8_t byte, __CHAR16_TYPE__ *c)
 {
-	*c++ = hexlut[byte >> 4];
-	*c = hexlut[byte & 0xF];
+	*c++ = (byte >> 4) < 10 ? (byte >> 4) + '0' : (byte >> 4) + 'A';
+	*c = (byte & 0xF) < 10 ? (byte & 0xF) + '0' : (byte & 0xF) + 'A';
 
+	// this version uses less flash memory
 	//*c++ = 'A' + (byte >> 4);
 	//*c = 'A' + (byte & 0xF);
 }
@@ -250,11 +265,11 @@ uint8_t read_calibration_byte(uint16_t address)
 
 void generate_serial(void)
 {
-	static bool generated = false;
-	if (generated) return;
-	generated = true;
+	USB_StringDescriptor *serial_string = (USB_StringDescriptor *)ep0_buf_in;
+	serial_string->bDescriptorType = USB_DTYPE_String;
+	serial_string->bLength = 22*2;
 
-	__CHAR16_TYPE__ *c = (__CHAR16_TYPE__ *)&serial_string.bString;
+	__CHAR16_TYPE__ *c = (__CHAR16_TYPE__ *)&serial_string->bString;
 	uint8_t idx = offsetof(NVM_PROD_SIGNATURES_t, LOTNUM0);
 	for (uint8_t i = 0; i < 6; i++)
 	{
@@ -462,7 +477,8 @@ uint16_t usb_cb_get_descriptor(uint8_t type, uint8_t index) {
 			break;
 #endif
 		case USB_DTYPE_String:
-			switch (index) {
+			switch (index)
+			{
 				case 0x00:
 					address = &language_string;
 					break;
@@ -475,8 +491,7 @@ uint16_t usb_cb_get_descriptor(uint8_t type, uint8_t index) {
 #ifdef USB_SERIAL_NUMBER
 				case 0x03:
 					generate_serial();
-					memcpy(ep0_buf_in, &serial_string, sizeof(serial_string));
-					return serial_string.bLength;
+					return sizeof(USB_StringDescriptor) + (22*2);
 #endif
 #ifdef USB_DFU_RUNTIME
 				case 0x10:
@@ -488,16 +503,21 @@ uint16_t usb_cb_get_descriptor(uint8_t type, uint8_t index) {
 					address = &msft_string;
 					break;
 #endif
+
+				default:
+					return 0;
 			}
 			size = pgm_read_byte(&((USB_StringDescriptor*)address)->bLength);
 			break;
 	}
 
+	cli();
 	uint8_t cmd_backup = NVM.CMD;
 	NVM.CMD = 0;
 	for (uint8_t i = 0; i < size; i++)
 		ep0_buf_in[i] = pgm_read_byte(address++);
 	NVM.CMD = cmd_backup;
+	sei();
 	return size;
 }
 

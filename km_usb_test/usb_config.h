@@ -13,7 +13,7 @@
 /* USB vendor and product IDs, version number
  */
 #define USB_VID				0x9999
-#define USB_PID				0x0060
+#define USB_PID				0x006B
 
 #define USB_VERSION_MAJOR	1
 #define USB_VERSION_MINOR	0
@@ -32,7 +32,7 @@
 
 /* Use Microsoft WCID descriptors
  */
-//#define	USB_WCID
+#define	USB_WCID
 //#define USB_WCID_EXTENDED
 
 
@@ -41,9 +41,9 @@
 //#define USB_DFU_RUNTIME
 
 
-/* Enable HID, otherwise vendor specific
+/* Enable HID, otherwise vendor specific bulk endpoints
  */
-#define USB_HID
+//#define USB_HID
 #define USB_HID_REPORT_SIZE		3
 
 
