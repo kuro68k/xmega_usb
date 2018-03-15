@@ -38,12 +38,12 @@
 
 /* Add DFU run-time interface
  */
-#define USB_DFU_RUNTIME
+//#define USB_DFU_RUNTIME
 
 
 /* Enable HID, otherwise vendor specific bulk endpoints
  */
-#define USB_HID
+//#define USB_HID
 #define USB_HID_REPORT_SIZE		3
 
 

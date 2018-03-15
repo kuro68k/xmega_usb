@@ -41,9 +41,6 @@ void usb_detach(void);
 /// Called internally on USB reset
 void usb_reset(void);
 
-/// Called internally to configure the USB controller with the new address
-void usb_set_address(uint8_t addr);
-
 /// Configure and enable an endpoint
 void usb_ep_enable(usb_ep ep, uint8_t type, usb_size bufsize, bool enable_interrupt);
 
@@ -54,8 +51,8 @@ void usb_ep_disable(usb_ep ep);
 void usb_ep_reset(usb_ep ep);
 
 /// Set or clear stall on an endpoint
-void usb_set_stall_ep(usb_ep ep);
-void usb_clr_stall_ep(usb_ep ep);
+void usb_ep_set_stall(usb_ep ep);
+void usb_ep_clr_stall(usb_ep ep);
 
 /// Returns true if an endpoint can start or queue a transfer
 bool usb_ep_is_ready(usb_ep ep);
@@ -90,15 +87,5 @@ void usb_ep0_out(void);
 /// Stall endpoint 0
 void usb_ep0_stall(void);
 
-/// Handle a vendor request for a Microsoft WCID compatible descriptor.
-/// bmRequestType is vendor/device, and bRequest is user-defined in the string descriptor, so
-/// the callback cb_control_setup must dispatch the request to this function.
-void usb_handle_msft_compatible(const USB_MicrosoftCompatibleDescriptor* msft_compatible);
-
-/// Convert a C string to a string descriptor in the ep0 IN buffer
-void* usb_string_to_descriptor(char* str);
-
 /// Internal common methods called by the hardware API
 void usb_handle_setup(void);
-void usb_handle_control_out_complete(void);
-void usb_handle_control_in_complete(void);
