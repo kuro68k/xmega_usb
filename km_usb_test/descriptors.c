@@ -229,6 +229,14 @@ const __flash USB_StringDescriptor product_string = {
 	.bString = USTRING(USB_STRING_PRODUCT)
 };
 
+#ifdef USB_DFU_RUNTIME
+const __flash USB_StringDescriptor dfu_runtime_string = {
+	.bLength = USB_STRING_LEN("Runtime"),
+	.bDescriptorType = USB_DTYPE_String,
+	.bString = u"Runtime"
+};
+#endif // USB_DFU_RUNTIME
+
 
 /**************************************************************************************************
  *	Optional serial number
@@ -283,18 +291,6 @@ void generate_serial(void)
 	}
 }
 #endif
-
-
-/**************************************************************************************************
- *	Optional DFU runtime interface
- */
-#ifdef USB_DFU_RUNTIME
-const __flash USB_StringDescriptor dfu_runtime_string = {
-	.bLength = USB_STRING_LEN("Runtime"),
-	.bDescriptorType = USB_DTYPE_String,
-	.bString = u"Runtime"
-};
-#endif // USB_DFU_RUNTIME
 
 
 /**************************************************************************************************
@@ -476,10 +472,10 @@ uint16_t usb_handle_descriptor_request(uint8_t type, uint8_t index) {
 	return size;
 }
 
-/**************************************************************************************************
- *	USB request handling
- */
 
+/**************************************************************************************************
+ *	Set USB configuration
+ */
 bool usb_cb_set_configuration(uint8_t config) {
 	if (config <= 1) {
 		return true;
@@ -488,6 +484,9 @@ bool usb_cb_set_configuration(uint8_t config) {
 	}
 }
 
+/**************************************************************************************************
+ *	Set USB interface
+ */
 bool usb_cb_set_interface(uint16_t interface, uint16_t altsetting) {
 	return false;
 }
