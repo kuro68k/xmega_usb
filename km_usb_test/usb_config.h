@@ -1,6 +1,8 @@
-/*
- * usb_config.h
+/* usb_config.h
  *
+ * Copyright 2018 Paul Qureshi
+ *
+ * USB stack configuration
  */
 
 
