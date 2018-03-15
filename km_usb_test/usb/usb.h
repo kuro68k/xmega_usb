@@ -20,17 +20,11 @@ typedef size_t usb_size;
 typedef uint8_t usb_ep;
 typedef uint8_t usb_bank;
 
-/// Callback when a setup packet is received
-void usb_cb_control_setup(void);
-
 /// Callback for a SET_CONFIGURATION request
 bool usb_cb_set_configuration(uint8_t config);
 
 /// Callback for a SET_INTERFACE request
 bool usb_cb_set_interface(uint16_t interface, uint16_t altsetting);
-
-/// Callbck for a GET_DESCRIPTOR request
-uint16_t usb_cb_get_descriptor(uint8_t type, uint8_t index);
 
 /// Initialize the USB controller
 void usb_init(void);

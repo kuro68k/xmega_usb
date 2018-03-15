@@ -453,7 +453,7 @@ void handle_msft_compatible(void)
 /**************************************************************************************************
  *	USB request handling
  */
-uint16_t usb_cb_get_descriptor(uint8_t type, uint8_t index) {
+uint16_t usb_handle_descriptor_request(uint8_t type, uint8_t index) {
 	const void* address = NULL;
 	uint16_t size = 0;
 
@@ -520,6 +520,10 @@ uint16_t usb_cb_get_descriptor(uint8_t type, uint8_t index) {
 	NVM.CMD = cmd_backup;
 	return size;
 }
+
+/**************************************************************************************************
+ *	USB request handling
+ */
 
 bool usb_cb_set_configuration(uint8_t config) {
 	if (config <= 1) {

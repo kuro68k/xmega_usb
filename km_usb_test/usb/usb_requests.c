@@ -50,7 +50,7 @@ void usb_handle_standard_setup_requests(void)
 		{
 			uint8_t type = usb_setup.wValue >> 8;
 			uint8_t index = usb_setup.wValue & 0xFF;
-			uint16_t size = usb_cb_get_descriptor(type, index);
+			uint16_t size = usb_handle_descriptor_request(type, index);
 
 			if (size)
 			{
