@@ -11,6 +11,7 @@
 #include "usb.h"
 #include "usb_config.h"
 #include "hid.h"
+#include "dfu.h"
 
 USB_SetupPacket usb_setup;
 __attribute__((__aligned__(2))) uint8_t ep0_buf_in[USB_EP0_BUFFER_SIZE];
@@ -20,7 +21,6 @@ volatile uint8_t usb_configuration;
 
 extern uint16_t usb_handle_descriptor_request(uint8_t type, uint8_t index);
 extern void handle_msft_compatible(void);
-extern void dfu_control_setup(void);
 
 
 /**************************************************************************************************
@@ -165,6 +165,51 @@ void usb_handle_class_setup_requests(void)
 #else
 	return usb_ep0_stall();
 #endif
+}
+
+/**************************************************************************************************
+* DFU vendor requests
+*/
+void dfu_control_setup(void)
+{
+	switch (usb_setup.bRequest)
+	{
+		case DFU_DETACH:
+			dfu_runtime_cb_enter_dfu_mode();
+			return usb_ep0_out();
+
+		// read status
+		case DFU_GETSTATUS: {
+			uint8_t len = usb_setup.wLength;
+			if (len > sizeof(DFU_StatusResponse))
+				len = sizeof(DFU_StatusResponse);
+			DFU_StatusResponse *st = (DFU_StatusResponse *)ep0_buf_in;
+			st->bStatus = DFU_STATUS_OK;
+			st->bState = DFU_STATE_dfuIDLE;
+			st->bwPollTimeout[0] = 0;
+			st->bwPollTimeout[1] = 0;
+			st->bwPollTimeout[2] = 0;
+			st->iString = 0;
+			usb_ep0_in(len);
+			return usb_ep0_out();
+		}
+
+		// abort, clear status
+		case DFU_ABORT:
+		case DFU_CLRSTATUS:
+			usb_ep0_in(0);
+			return usb_ep0_out();
+
+		// read state
+		case DFU_GETSTATE:
+			ep0_buf_in[0] = 0;
+			usb_ep0_in(1);
+			return usb_ep0_out();
+
+		// unsupported requests
+		default:
+			return usb_ep0_stall();
+	}
 }
 
 /**************************************************************************************************

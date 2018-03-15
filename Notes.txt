@@ -17,7 +17,8 @@ poll.
 
 
 
-To do:
+To do
+===============================================================================
 
 - Reduce EP0 buffer size, perhaps to max descriptor size
 - Improve serial string generation and remove serial_string struct
