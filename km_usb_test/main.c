@@ -1,6 +1,7 @@
 /*
  * km_usb_test.c
  *
+ * Copyright 2018 Paul Qureshi
  */
 
 #include <avr/io.h>
