@@ -352,7 +352,7 @@ const __flash USB_StringDescriptor msft_string = {
 	.bString = u"MSFT100" WCID_REQUEST_ID_STR
 };
 
-__attribute__((__aligned__(4))) const USB_MicrosoftCompatibleDescriptor msft_compatible = {
+__attribute__((__aligned__(2))) const USB_MicrosoftCompatibleDescriptor msft_compatible = {
 	.dwLength = sizeof(USB_MicrosoftCompatibleDescriptor) +
 				1*sizeof(USB_MicrosoftCompatibleDescriptor_Interface),
 	.bcdVersion = 0x0100,
@@ -371,7 +371,7 @@ __attribute__((__aligned__(4))) const USB_MicrosoftCompatibleDescriptor msft_com
 };
 
 #ifdef USB_WCID_EXTENDED
-__attribute__((__aligned__(4))) const USB_MicrosoftExtendedPropertiesDescriptor msft_extended = {
+__attribute__((__aligned__(2))) const USB_MicrosoftExtendedPropertiesDescriptor msft_extended = {
 	.dwLength = sizeof(USB_MicrosoftExtendedPropertiesDescriptor),
 	.bcdVersion = 0x0100,
 	.wIndex = 0x0005,
@@ -425,7 +425,8 @@ __attribute__((__aligned__(4))) const USB_MicrosoftExtendedPropertiesDescriptor 
 */
 #endif // USB_WCID_EXTENDED
 
-void handle_msft_compatible(void) {
+void handle_msft_compatible(void)
+{
 	const uint8_t *data;
 	uint16_t len;
 #ifdef USB_WCID_EXTENDED
@@ -455,6 +456,9 @@ void handle_msft_compatible(void) {
 uint16_t usb_cb_get_descriptor(uint8_t type, uint8_t index) {
 	const void* address = NULL;
 	uint16_t size = 0;
+
+	uint8_t cmd_backup = NVM.CMD;
+	NVM.CMD = 0;
 
 	switch (type)
 	{
@@ -511,13 +515,9 @@ uint16_t usb_cb_get_descriptor(uint8_t type, uint8_t index) {
 			break;
 	}
 
-	cli();
-	uint8_t cmd_backup = NVM.CMD;
-	NVM.CMD = 0;
 	for (uint8_t i = 0; i < size; i++)
 		ep0_buf_in[i] = pgm_read_byte(address++);
 	NVM.CMD = cmd_backup;
-	sei();
 	return size;
 }
 
@@ -529,7 +529,8 @@ bool usb_cb_set_configuration(uint8_t config) {
 	}
 }
 
-void usb_cb_control_setup(void) {
+void usb_cb_control_setup(void)
+{
 	uint8_t recipient = usb_setup.bmRequestType & USB_REQTYPE_RECIPIENT_MASK;
 	if (recipient == USB_RECIPIENT_DEVICE)
 	{
