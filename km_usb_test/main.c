@@ -25,6 +25,7 @@ int main(void)
 
 	usb_configure_clock();
 
+	// clock output check
 	//PORTCFG.CLKEVOUT = PORTCFG_CLKOUTSEL_CLK1X_gc | PORTCFG_CLKOUT_PC7_gc;
 	//PORTC.DIRSET = PIN7_bm;
 	//for(;;);
@@ -35,13 +36,10 @@ int main(void)
 
 	usb_init();
 
-	//USB.CTRLA |= USB_FIFOEN_bm;
-
 	PMIC.CTRL = PMIC_LOLVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_HILVLEN_bm;
 	sei();
 
-	//usb_attach();
-	//usb_ep_enable(0x81, USB_EP_TYPE_BULK_gc, 64);	// interrupt == bulk (see manual)
+	usb_attach();
 
 #ifdef USB_HID
 	for(;;)
@@ -52,5 +50,6 @@ int main(void)
 		hid_send_report();
 	}
 #endif
+
 	for(;;);
 }

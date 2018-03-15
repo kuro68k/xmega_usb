@@ -83,7 +83,6 @@ void usb_reset()
 #endif
 
 	USB.CTRLA = USB_ENABLE_bm | USB_SPEED_bm | usb_num_endpoints;
-	usb_attach();
 }
 
 /**************************************************************************************************
