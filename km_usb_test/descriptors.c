@@ -529,7 +529,7 @@ bool usb_cb_set_configuration(uint8_t config) {
 	}
 }
 
-void usb_cb_control_setup(void)
+void usb_handle_vendor_setup_requests(void)
 {
 	uint8_t recipient = usb_setup.bmRequestType & USB_REQTYPE_RECIPIENT_MASK;
 	if (recipient == USB_RECIPIENT_DEVICE)

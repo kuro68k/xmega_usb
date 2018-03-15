@@ -193,6 +193,6 @@ void usb_handle_setup(void)
 
 		case USB_REQTYPE_VENDOR:
 		default:
-			return usb_cb_control_setup();
+			return usb_handle_vendor_setup_requests();
 	}
 }
