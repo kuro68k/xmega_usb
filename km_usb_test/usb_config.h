@@ -13,7 +13,7 @@
 /* USB vendor and product IDs, version number
  */
 #define USB_VID				0x9999
-#define USB_PID				0x007C
+#define USB_PID				0x007F
 
 #define USB_VERSION_MAJOR	1
 #define USB_VERSION_MINOR	0
@@ -38,12 +38,12 @@
 
 /* Add DFU run-time interface
  */
-//#define USB_DFU_RUNTIME
+#define USB_DFU_RUNTIME
 
 
 /* Enable HID, otherwise vendor specific bulk endpoints
  */
-//#define USB_HID
+#define USB_HID
 #define USB_HID_REPORT_SIZE		3
 
 

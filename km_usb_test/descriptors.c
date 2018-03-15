@@ -312,7 +312,11 @@ __attribute__((__aligned__(2))) const USB_MicrosoftCompatibleDescriptor msft_com
 	.reserved = {0, 0, 0, 0, 0, 0, 0},
 	.interfaces = {
 		{
-			.bFirstInterfaceNumber = 0,
+#ifdef USB_HID
+			.bFirstInterfaceNumber = 1,		// WCID only needed for the DFU interface
+#else
+			.bFirstInterfaceNumber = 0,		// WCID covers both interfaces
+#endif
 			.reserved1 = 0x01,
 			.compatibleID = "WINUSB\0\0",
 			.subCompatibleID = {0, 0, 0, 0, 0, 0, 0, 0},
