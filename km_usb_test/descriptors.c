@@ -20,9 +20,6 @@
 // Other options in usb.h
 // Additional compiler flags: -std=gnu99 -fno-strict-aliasing -Wstrict-prototypes -fno-jump-tables
 
-#define WCID_REQUEST_ID			0x22
-#define WCID_REQUEST_ID_STR		u"\x22"
-
 USB_ENDPOINTS(1);
 
 
@@ -451,7 +448,7 @@ void handle_msft_compatible(void)
 
 
 /**************************************************************************************************
- *	USB request handling
+ *	USB descriptor request handler
  */
 uint16_t usb_handle_descriptor_request(uint8_t type, uint8_t index) {
 	const void* address = NULL;
@@ -531,40 +528,6 @@ bool usb_cb_set_configuration(uint8_t config) {
 	} else {
 		return false;
 	}
-}
-
-void usb_handle_vendor_setup_requests(void)
-{
-	uint8_t recipient = usb_setup.bmRequestType & USB_REQTYPE_RECIPIENT_MASK;
-	if (recipient == USB_RECIPIENT_DEVICE)
-	{
-		switch(usb_setup.bRequest)
-		{
-#ifdef USB_WCID
-			case WCID_REQUEST_ID:
-				return handle_msft_compatible();
-#endif
-		}
-	}
-	else if (recipient == USB_RECIPIENT_INTERFACE)
-	{
-		if (usb_setup.wIndex == 0)
-		{			// main interface
-			switch(usb_setup.bRequest)
-			{
-#ifdef USB_WCID_EXTENDED
-				case WCID_REQUEST_ID:
-					return handle_msft_compatible();
-#endif
-			}
-		}
-#ifdef USB_DFU_RUNTIME
-		else if (usb_setup.wIndex == 1)		// DFU interface
-			return dfu_control_setup();
-#endif
-	}
-
-	return usb_ep0_stall();
 }
 
 bool usb_cb_set_interface(uint16_t interface, uint16_t altsetting) {

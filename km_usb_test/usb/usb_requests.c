@@ -17,6 +17,12 @@ __attribute__((__aligned__(2))) uint8_t ep0_buf_in[USB_EP0_BUFFER_SIZE];
 __attribute__((__aligned__(2))) uint8_t ep0_buf_out[USB_EP0_BUFFER_SIZE];
 volatile uint8_t usb_configuration;
 
+
+extern uint16_t usb_handle_descriptor_request(uint8_t type, uint8_t index);
+extern void handle_msft_compatible(void);
+extern void dfu_control_setup(void);
+
+
 /**************************************************************************************************
 * Handle standard setup requests
 */
@@ -99,24 +105,6 @@ void usb_handle_class_setup_requests(void)
 	switch (usb_setup.bRequest)
 	{
 		// IN requests
-/*
-		case USB_REQ_GetDescriptor:
-		{
-			uint8_t type = usb_setup.wValue >> 8;
-			uint8_t index = usb_setup.wValue & 0xFF;
-			uint16_t size = usb_cb_get_descriptor(type, index);
-
-			if (size)
-			{
-				if (size > usb_setup.wLength)
-					size = usb_setup.wLength;
-
-				return usb_ep_start_in(0x80, ep0_buf_in, size, true);
-			}
-			else
-				return usb_ep0_stall();
-		}
-*/
 		case USB_HIDREQ_GET_REPORT:
 		{
 			uint16_t bytes_in = -1;
@@ -179,8 +167,46 @@ void usb_handle_class_setup_requests(void)
 #endif
 }
 
-/* Handle setup packets
- */
+/**************************************************************************************************
+* Handle vendor setup requests
+*/
+void usb_handle_vendor_setup_requests(void)
+{
+	uint8_t recipient = usb_setup.bmRequestType & USB_REQTYPE_RECIPIENT_MASK;
+	if (recipient == USB_RECIPIENT_DEVICE)
+	{
+		switch(usb_setup.bRequest)
+		{
+#ifdef USB_WCID
+			case WCID_REQUEST_ID:
+				return handle_msft_compatible();
+#endif
+		}
+	}
+	else if (recipient == USB_RECIPIENT_INTERFACE)
+	{
+		if (usb_setup.wIndex == 0)
+		{			// main interface
+			switch(usb_setup.bRequest)
+			{
+#ifdef USB_WCID_EXTENDED
+				case WCID_REQUEST_ID:
+					return handle_msft_compatible();
+#endif
+			}
+		}
+#ifdef USB_DFU_RUNTIME
+		else if (usb_setup.wIndex == 1)		// DFU interface
+			return dfu_control_setup();
+#endif
+	}
+
+	return usb_ep0_stall();
+}
+
+/**************************************************************************************************
+* Handle setup requests
+*/
 void usb_handle_setup(void)
 {
 	switch (usb_setup.bmRequestType & USB_REQTYPE_TYPE_MASK)

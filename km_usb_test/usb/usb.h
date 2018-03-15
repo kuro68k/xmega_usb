@@ -10,6 +10,9 @@
 #define USB_EP0_MAX_PACKET_SIZE		8
 #define USB_EP0_BUFFER_SIZE			64
 
+#define WCID_REQUEST_ID			0x22
+#define WCID_REQUEST_ID_STR		u"\x22"
+
 extern USB_SetupPacket usb_setup;
 extern uint8_t ep0_buf_in[USB_EP0_BUFFER_SIZE];
 extern uint8_t ep0_buf_out[USB_EP0_BUFFER_SIZE];
