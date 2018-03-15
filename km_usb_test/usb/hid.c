@@ -9,7 +9,7 @@
 #include "usb.h"
 #include "usb_config.h"
 
-uint8_t hid_report[USB_HID_REPORT_SIZE];
+uint8_t hid_report[USB_HID_REPORT_SIZE] __attribute__((__aligned__(2)));
 
 
 /* Send HID reports
