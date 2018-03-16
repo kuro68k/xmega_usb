@@ -15,9 +15,6 @@
 
 // Notes:
 // Fill in msft_extended for WCID
-// WCID request ID can be changed below
-// Other options in usb.h
-// Additional compiler flags: -std=gnu99 -fno-strict-aliasing -Wstrict-prototypes -fno-jump-tables
 
 USB_ENDPOINTS(1);
 
@@ -325,6 +322,7 @@ __attribute__((__aligned__(2))) const USB_MicrosoftCompatibleDescriptor msft_com
 };
 
 #ifdef USB_WCID_EXTENDED
+// example of two extended properties
 __attribute__((__aligned__(2))) const USB_MicrosoftExtendedPropertiesDescriptor msft_extended = {
 	.dwLength = sizeof(USB_MicrosoftExtendedPropertiesDescriptor),
 	.bcdVersion = 0x0100,
@@ -346,8 +344,8 @@ __attribute__((__aligned__(2))) const USB_MicrosoftExtendedPropertiesDescriptor 
 	.data2 = L"Name56789AB\0",
 };
 
-
 /*
+// example of one extended property (WinUSB GUID)
 __attribute__((__aligned__(4))) const USB_MicrosoftExtendedPropertiesDescriptor msft_extended = {
 	.dwLength = sizeof(USB_MicrosoftExtendedPropertiesDescriptor),
 	.dwLength = 142,
@@ -363,6 +361,8 @@ __attribute__((__aligned__(4))) const USB_MicrosoftExtendedPropertiesDescriptor 
 };
 */
 /*
+// example of one extended property (WinUSB GUID) using "DeviceInterfaceGUIDs" (plural)
+// see "important note 2" at https://github.com/pbatard/libwdi/wiki/WCID-Devices#Defining_a_Device_Interface_GUID_or_other_device_specific_properties
 __attribute__((__aligned__(4))) const USB_MicrosoftExtendedPropertiesDescriptor msft_extended = {
 	.dwLength = sizeof(USB_MicrosoftExtendedPropertiesDescriptor),
 	.dwLength = 146,
