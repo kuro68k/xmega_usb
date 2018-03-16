@@ -35,6 +35,9 @@
 #define	USB_WCID
 //#define USB_WCID_EXTENDED
 
+#define WCID_REQUEST_ID			0x22
+#define WCID_REQUEST_ID_STR		u"\x22"
+
 
 /* Add DFU run-time interface
  */

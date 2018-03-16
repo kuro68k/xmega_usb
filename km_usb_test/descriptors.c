@@ -14,7 +14,6 @@
 #include "usb_config.h"
 
 // Notes:
-// Fill in VID/PID in device_descriptor
 // Fill in msft_extended for WCID
 // WCID request ID can be changed below
 // Other options in usb.h
