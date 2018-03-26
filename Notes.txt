@@ -38,6 +38,12 @@ with usb_ep_enable() and send data IN with usb_ep_start_in().
 HID
 ===============================================================================
 
+Define USB_HID to enable. Bulk endpoints will be disabled. Can be combined with
+DFU runtime support.
+
+USB_HID_REPORT_SIZE must match what the report descriptor describes, or Windows
+will stop polling.
+
 Write reports into hid_report. Call hid_send_report() to send report on next
 poll. You should write an initial state report before attaching USB, as the OS
 will probably poll it immediately.
