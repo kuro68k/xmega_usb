@@ -56,6 +56,10 @@ DFU runtime support allows a host with DFU software to start the bootloader
 over the USB interface. Can be combined with WCID to avoid needing a driver
 on Windows.
 
+dfu_cb_enter_dfu_mode() is called to start DFU mode (the bootloader). The
+example code creates a watchdog reset with time for a response to be sent to
+the host. Add any additional code needed to start the bootloader here.
+
 
 WCID
 ===============================================================================

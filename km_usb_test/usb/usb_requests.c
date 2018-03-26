@@ -175,7 +175,7 @@ void dfu_control_setup(void)
 	switch (usb_setup.bRequest)
 	{
 		case DFU_DETACH:
-			dfu_runtime_cb_enter_dfu_mode();
+			dfu_cb_enter_dfu_mode();
 			return usb_ep0_out();
 
 		// read status

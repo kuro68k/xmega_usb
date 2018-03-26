@@ -59,7 +59,7 @@
 
 /* DFU callbacks
  */
-static inline void dfu_runtime_cb_enter_dfu_mode(void)
+static inline void dfu_cb_enter_dfu_mode(void)
 {
 	// watchdog reset gives USB time to send response
 	asm("cli");
