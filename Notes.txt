@@ -67,6 +67,11 @@ WCID
 WCID is a Microsoft extension that allows USB devices to select the WinUSB
 driver automatically, without the need for .inf files on the host side.
 
+The basic descriptors are fixed (msft_string and msft_compatible). An optional
+extended properties descriptor (msft_extended) is available to poke values into
+the registry, such as a DeviceInterfaceGUID or Label that appears in Device
+Manager. If used the USB_MicrosoftExtendedPropertiesDescriptor
+
 
 To do
 ===============================================================================
