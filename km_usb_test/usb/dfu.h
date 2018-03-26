@@ -29,7 +29,7 @@ typedef struct
 	uint16_t	wDetachTimeout;
 	uint16_t	wTransferSize;
 	uint16_t	bcdDFUVersion;
-} DFU_FunctionalDescriptor;
+} DFU_FunctionalDescriptor_t;
 
 
 // DFU requests

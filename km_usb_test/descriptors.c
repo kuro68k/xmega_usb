@@ -22,8 +22,8 @@ USB_ENDPOINTS(1);
 /**************************************************************************************************
 * USB Device descriptor
 */
-const USB_DeviceDescriptor PROGMEM device_descriptor = {
-	.bLength				= sizeof(USB_DeviceDescriptor),
+const __flash USB_DeviceDescriptor_t device_descriptor = {
+	.bLength				= sizeof(USB_DeviceDescriptor_t),
 	.bDescriptorType		= USB_DTYPE_Device,
 
 	.bcdUSB                 = 0x0200,
@@ -84,31 +84,31 @@ const __flash uint8_t hid_report_descriptor[] = {
 /**************************************************************************************************
 * USB device descriptor
 */
-typedef struct ConfigDesc {
-	USB_ConfigurationDescriptor	Config;
-	USB_InterfaceDescriptor		Interface0;
+typedef struct {
+	USB_ConfigurationDescriptor_t	Config;
+	USB_InterfaceDescriptor_t		Interface0;
 #ifdef USB_HID
-	USB_HIDDescriptor			HIDDescriptor;
-	USB_EndpointDescriptor		HIDEndpoint;
+	USB_HIDDescriptor_t			HIDDescriptor;
+	USB_EndpointDescriptor_t		HIDEndpoint;
 #else
-	USB_EndpointDescriptor		DataInEndpoint;
-	USB_EndpointDescriptor		DataOutEndpoint;
+	USB_EndpointDescriptor_t		DataInEndpoint;
+	USB_EndpointDescriptor_t		DataOutEndpoint;
 #endif
 #ifdef USB_DFU_RUNTIME
-	USB_InterfaceDescriptor		DFU_intf_runtime;
-	DFU_FunctionalDescriptor	DFU_desc_runtime;
+	USB_InterfaceDescriptor_t		DFU_intf_runtime;
+	DFU_FunctionalDescriptor_t	DFU_desc_runtime;
 #endif
-} ConfigDesc;
+} ConfigDesc_t;
 
 
 /**************************************************************************************************
 * USB configuration descriptor
 */
-const __flash ConfigDesc configuration_descriptor = {
+const __flash ConfigDesc_t configuration_descriptor = {
 	.Config = {
-		.bLength = sizeof(USB_ConfigurationDescriptor),
+		.bLength = sizeof(USB_ConfigurationDescriptor_t),
 		.bDescriptorType = USB_DTYPE_Configuration,
-		.wTotalLength  = sizeof(ConfigDesc),
+		.wTotalLength  = sizeof(ConfigDesc_t),
 #ifdef USB_DFU_RUNTIME
 		.bNumInterfaces = 2,
 #else
@@ -121,7 +121,7 @@ const __flash ConfigDesc configuration_descriptor = {
 	},
 #ifdef USB_HID
 	.Interface0 = {
-		.bLength = sizeof(USB_InterfaceDescriptor),
+		.bLength = sizeof(USB_InterfaceDescriptor_t),
 		.bDescriptorType = USB_DTYPE_Interface,
 		.bInterfaceNumber = 0,
 		.bAlternateSetting = 0,
@@ -132,7 +132,7 @@ const __flash ConfigDesc configuration_descriptor = {
 		.iInterface = 0
 	},
 	.HIDDescriptor = {
-		.bLength = sizeof(USB_HIDDescriptor),
+		.bLength = sizeof(USB_HIDDescriptor_t),
 		.bDescriptorType = USB_DTYPE_HID,
 		.bcdHID = 0x0111,
 		.bCountryCode = 0,
@@ -141,7 +141,7 @@ const __flash ConfigDesc configuration_descriptor = {
 		.wDescriptorLength = sizeof(hid_report_descriptor),
 	},
 	.HIDEndpoint = {
-		.bLength = sizeof(USB_EndpointDescriptor),
+		.bLength = sizeof(USB_EndpointDescriptor_t),
 		.bDescriptorType = USB_DTYPE_Endpoint,
 		.bEndpointAddress = 0x81,
 		.bmAttributes = (USB_EP_TYPE_INTERRUPT),
@@ -150,7 +150,7 @@ const __flash ConfigDesc configuration_descriptor = {
 	},
 #else
 	.Interface0 = {
-		.bLength = sizeof(USB_InterfaceDescriptor),
+		.bLength = sizeof(USB_InterfaceDescriptor_t),
 		.bDescriptorType = USB_DTYPE_Interface,
 		.bInterfaceNumber = 0,
 		.bAlternateSetting = 0,
@@ -161,7 +161,7 @@ const __flash ConfigDesc configuration_descriptor = {
 		.iInterface = 0
 	},
 	.DataInEndpoint = {
-		.bLength = sizeof(USB_EndpointDescriptor),
+		.bLength = sizeof(USB_EndpointDescriptor_t),
 		.bDescriptorType = USB_DTYPE_Endpoint,
 		.bEndpointAddress = 0x81,
 		.bmAttributes = (USB_EP_TYPE_BULK | ENDPOINT_ATTR_NO_SYNC | ENDPOINT_USAGE_DATA),
@@ -169,7 +169,7 @@ const __flash ConfigDesc configuration_descriptor = {
 		.bInterval = 0x00
 	},
 	.DataOutEndpoint = {
-		.bLength = sizeof(USB_EndpointDescriptor),
+		.bLength = sizeof(USB_EndpointDescriptor_t),
 		.bDescriptorType = USB_DTYPE_Endpoint,
 		.bEndpointAddress = 0x2,
 		.bmAttributes = (USB_EP_TYPE_BULK | ENDPOINT_ATTR_NO_SYNC | ENDPOINT_USAGE_DATA),
@@ -179,7 +179,7 @@ const __flash ConfigDesc configuration_descriptor = {
 #endif
 #ifdef USB_DFU_RUNTIME
 	.DFU_intf_runtime = {
-		.bLength = sizeof(USB_InterfaceDescriptor),
+		.bLength = sizeof(USB_InterfaceDescriptor_t),
 		.bDescriptorType = USB_DTYPE_Interface,
 		.bInterfaceNumber = 1,
 		.bAlternateSetting = 0,
@@ -190,7 +190,7 @@ const __flash ConfigDesc configuration_descriptor = {
 		.iInterface = 0x10
 	},
 	.DFU_desc_runtime = {
-		.bLength = sizeof(DFU_FunctionalDescriptor),
+		.bLength = sizeof(DFU_FunctionalDescriptor_t),
 		.bDescriptorType = DFU_DESCRIPTOR_TYPE,
 		.bmAttributes = (DFU_ATTR_CANDOWNLOAD_bm | DFU_ATTR_WILLDETACH_bm),
 		.wDetachTimeout = 0,
@@ -207,26 +207,26 @@ const __flash ConfigDesc configuration_descriptor = {
 #define	CONCAT(a, b)	a##b
 #define	USTRING(s)		CONCAT(u, s)
 
-const __flash USB_StringDescriptor language_string = {
+const __flash USB_StringDescriptor_t language_string = {
 	.bLength = USB_STRING_LEN(1),
 	.bDescriptorType = USB_DTYPE_String,
 	.bString = {USB_LANGUAGE_EN_US},
 };
 
-const __flash USB_StringDescriptor manufacturer_string = {
+const __flash USB_StringDescriptor_t manufacturer_string = {
 	.bLength = USB_STRING_LEN(USB_STRING_MANUFACTURER),
 	.bDescriptorType = USB_DTYPE_String,
 	.bString = USTRING(USB_STRING_MANUFACTURER)
 };
 
-const __flash USB_StringDescriptor product_string = {
+const __flash USB_StringDescriptor_t product_string = {
 	.bLength = USB_STRING_LEN(USB_STRING_PRODUCT),
 	.bDescriptorType = USB_DTYPE_String,
 	.bString = USTRING(USB_STRING_PRODUCT)
 };
 
 #ifdef USB_DFU_RUNTIME
-const __flash USB_StringDescriptor dfu_runtime_string = {
+const __flash USB_StringDescriptor_t dfu_runtime_string = {
 	.bLength = USB_STRING_LEN("Runtime"),
 	.bDescriptorType = USB_DTYPE_String,
 	.bString = u"Runtime"
@@ -266,7 +266,7 @@ uint8_t read_calibration_byte(uint16_t address)
 
 void generate_serial(void)
 {
-	USB_StringDescriptor *serial_string = (USB_StringDescriptor *)ep0_buf_in;
+	USB_StringDescriptor_t *serial_string = (USB_StringDescriptor_t *)ep0_buf_in;
 	serial_string->bDescriptorType = USB_DTYPE_String;
 	serial_string->bLength = 22*2;
 
@@ -293,15 +293,15 @@ void generate_serial(void)
  *	Optional Microsoft WCID stuff
  */
 #ifdef USB_WCID
-const __flash USB_StringDescriptor msft_string = {
+const __flash USB_StringDescriptor_t msft_string = {
 	.bLength = 18,
 	.bDescriptorType = USB_DTYPE_String,
 	.bString = u"MSFT100" WCID_REQUEST_ID_STR
 };
 
-__attribute__((__aligned__(2))) const USB_MicrosoftCompatibleDescriptor msft_compatible = {
-	.dwLength = sizeof(USB_MicrosoftCompatibleDescriptor) +
-				1*sizeof(USB_MicrosoftCompatibleDescriptor_Interface),
+__attribute__((__aligned__(2))) const USB_MicrosoftCompatibleDescriptor_t msft_compatible = {
+	.dwLength = sizeof(USB_MicrosoftCompatibleDescriptor_t) +
+				1*sizeof(USB_MicrosoftCompatibleDescriptor_Interface_t),
 	.bcdVersion = 0x0100,
 	.wIndex = 0x0004,
 	.bCount = 1,
@@ -323,8 +323,8 @@ __attribute__((__aligned__(2))) const USB_MicrosoftCompatibleDescriptor msft_com
 
 #ifdef USB_WCID_EXTENDED
 // example of two extended properties
-__attribute__((__aligned__(2))) const USB_MicrosoftExtendedPropertiesDescriptor msft_extended = {
-	.dwLength = sizeof(USB_MicrosoftExtendedPropertiesDescriptor),
+__attribute__((__aligned__(2))) const USB_MicrosoftExtendedPropertiesDescriptor_t msft_extended = {
+	.dwLength = sizeof(USB_MicrosoftExtendedPropertiesDescriptor_t),
 	.bcdVersion = 0x0100,
 	.wIndex = 0x0005,
 	.wCount = 2,
@@ -418,16 +418,16 @@ uint16_t usb_handle_descriptor_request(uint8_t type, uint8_t index) {
 	{
 		case USB_DTYPE_Device:
 			address = &device_descriptor;
-			size    = sizeof(USB_DeviceDescriptor);
+			size    = sizeof(USB_DeviceDescriptor_t);
 			break;
 		case USB_DTYPE_Configuration:
 			address = &configuration_descriptor;
-			size    = sizeof(ConfigDesc);
+			size    = sizeof(ConfigDesc_t);
 			break;
 #ifdef USB_HID
 		case USB_DTYPE_HID:
 			address = &configuration_descriptor.HIDDescriptor;
-			size	= sizeof(USB_HIDDescriptor);
+			size	= sizeof(USB_HIDDescriptor_t);
 			break;
 		case USB_DTYPE_Report:
 			address = &hid_report_descriptor;
@@ -449,7 +449,7 @@ uint16_t usb_handle_descriptor_request(uint8_t type, uint8_t index) {
 #ifdef USB_SERIAL_NUMBER
 				case 0x03:
 					generate_serial();
-					return sizeof(USB_StringDescriptor) + (22*2);
+					return sizeof(USB_StringDescriptor_t) + (22*2);
 #endif
 #ifdef USB_DFU_RUNTIME
 				case 0x10:
@@ -465,7 +465,7 @@ uint16_t usb_handle_descriptor_request(uint8_t type, uint8_t index) {
 				default:
 					return 0;
 			}
-			size = pgm_read_byte(&((USB_StringDescriptor*)address)->bLength);
+			size = pgm_read_byte(&((USB_StringDescriptor_t*)address)->bLength);
 			break;
 	}
 

@@ -13,7 +13,7 @@
 #include "hid.h"
 #include "dfu.h"
 
-USB_SetupPacket usb_setup;
+USB_SetupPacket_t usb_setup;
 __attribute__((__aligned__(2))) uint8_t ep0_buf_in[USB_EP0_BUFFER_SIZE];
 __attribute__((__aligned__(2))) uint8_t ep0_buf_out[USB_EP0_BUFFER_SIZE];
 volatile uint8_t usb_configuration;

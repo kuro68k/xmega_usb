@@ -10,7 +10,7 @@
 #define USB_EP0_MAX_PACKET_SIZE		8
 #define USB_EP0_BUFFER_SIZE			64
 
-extern USB_SetupPacket usb_setup;
+extern USB_SetupPacket_t usb_setup;
 extern uint8_t ep0_buf_in[USB_EP0_BUFFER_SIZE];
 extern uint8_t ep0_buf_out[USB_EP0_BUFFER_SIZE];
 extern volatile uint8_t USB_DeviceState;

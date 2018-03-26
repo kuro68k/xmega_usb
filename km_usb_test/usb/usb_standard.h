@@ -32,7 +32,7 @@ typedef struct  {
 	uint16_t wValue;
 	uint16_t wIndex;
 	uint16_t wLength;
-} __attribute__ ((packed)) USB_SetupPacket;
+} __attribute__ ((packed)) USB_SetupPacket_t;
 
 // Standard requests
 enum {
@@ -111,7 +111,7 @@ typedef enum {
 
 
 #define USB_CONFIG_POWER_MA(mA) ((mA)/2)
-#define USB_STRING_LEN(s) (sizeof(USB_DescriptorHeader) + ((sizeof(s)-1) * 2))
+#define USB_STRING_LEN(s) (sizeof(USB_DescriptorHeader_t) + ((sizeof(s)-1) * 2))
 
 #define USB_LANGUAGE_EN_US 0x0409
 
@@ -139,7 +139,7 @@ typedef enum {
 typedef struct {
 	uint8_t bLength;
 	uint8_t bDescriptorType;
-} __attribute__ ((packed)) USB_DescriptorHeader;
+} __attribute__ ((packed)) USB_DescriptorHeader_t;
 
 typedef struct {
 	uint8_t bLength;
@@ -156,7 +156,7 @@ typedef struct {
 	uint8_t iProduct;
 	uint8_t iSerialNumber;
 	uint8_t bNumConfigurations;
-} __attribute__ ((packed)) USB_DeviceDescriptor;
+} __attribute__ ((packed)) USB_DeviceDescriptor_t;
 
 typedef struct {
 	uint8_t bLength;
@@ -166,7 +166,7 @@ typedef struct {
 	uint8_t bMaxPacketSize0;
 	uint8_t bNumConfigurations;
 	uint8_t bReserved;
-} __attribute__ ((packed)) USB_DeviceQualifierDescriptor;
+} __attribute__ ((packed)) USB_DeviceQualifierDescriptor_t;
 
 typedef struct {
 	uint8_t bLength;
@@ -177,7 +177,7 @@ typedef struct {
 	uint8_t iConfiguration;
 	uint8_t bmAttributes;
 	uint8_t bMaxPower;
-} __attribute__ ((packed)) USB_ConfigurationDescriptor;
+} __attribute__ ((packed)) USB_ConfigurationDescriptor_t;
 
 typedef struct {
 	uint8_t bLength;
@@ -189,7 +189,7 @@ typedef struct {
 	uint8_t bInterfaceSubClass;
 	uint8_t bInterfaceProtocol;
 	uint8_t iInterface;
-} __attribute__ ((packed)) USB_InterfaceDescriptor;
+} __attribute__ ((packed)) USB_InterfaceDescriptor_t;
 
 typedef struct {
 	uint8_t bLength;
@@ -200,7 +200,7 @@ typedef struct {
 	uint8_t bFunctionSubClass;
 	uint8_t bFunctionProtocol;
 	uint8_t iFunction;
-} __attribute__ ((packed)) USB_InterfaceAssociationDescriptor;
+} __attribute__ ((packed)) USB_InterfaceAssociationDescriptor_t;
 
 typedef struct {
 	uint8_t bLength;
@@ -209,13 +209,13 @@ typedef struct {
 	uint8_t bmAttributes;
 	uint16_t wMaxPacketSize;
 	uint8_t bInterval;
-} __attribute__ ((packed)) USB_EndpointDescriptor;
+} __attribute__ ((packed)) USB_EndpointDescriptor_t;
 
 typedef struct {
 	uint8_t bLength;
 	uint8_t bDescriptorType;
 	__CHAR16_TYPE__ bString[];
-} __attribute__ ((packed)) USB_StringDescriptor;
+} __attribute__ ((packed)) USB_StringDescriptor_t;
 
 typedef struct {
 	uint8_t bLength;
@@ -225,7 +225,7 @@ typedef struct {
 	uint8_t bNumDescriptors;
 	uint8_t bReportDescriptorType;
 	uint16_t wDescriptorLength;
-} __attribute__ ((packed)) USB_HIDDescriptor;
+} __attribute__ ((packed)) USB_HIDDescriptor_t;
 
 /// Microsoft WCID descriptor
 typedef struct {
@@ -234,7 +234,7 @@ typedef struct {
 	uint8_t compatibleID[8];
 	uint8_t subCompatibleID[8];
 	uint8_t reserved2[6];
-} __attribute__((packed)) USB_MicrosoftCompatibleDescriptor_Interface;
+} __attribute__((packed)) USB_MicrosoftCompatibleDescriptor_Interface_t;
 
 typedef struct {
 	uint32_t dwLength;
@@ -242,8 +242,8 @@ typedef struct {
 	uint16_t wIndex;
 	uint8_t bCount;
 	uint8_t reserved[7];
-	USB_MicrosoftCompatibleDescriptor_Interface interfaces[];
-} __attribute__((packed)) USB_MicrosoftCompatibleDescriptor;
+	USB_MicrosoftCompatibleDescriptor_Interface_t interfaces[];
+} __attribute__((packed)) USB_MicrosoftCompatibleDescriptor_t;
 
 #include <stddef.h>	// for wchar_t
 /*
@@ -258,7 +258,7 @@ typedef struct {
 	wchar_t name[20];
 	uint32_t dwDataLength;
 	wchar_t data[39];
-} __attribute__((packed)) USB_MicrosoftExtendedPropertiesDescriptor;
+} __attribute__((packed)) USB_MicrosoftExtendedPropertiesDescriptor_t;
 */
 
 typedef struct {
@@ -280,4 +280,4 @@ typedef struct {
 	wchar_t name2[6];
 	uint32_t dwDataLength2;
 	wchar_t data2[13];
-} __attribute__((packed)) USB_MicrosoftExtendedPropertiesDescriptor;
+} __attribute__((packed)) USB_MicrosoftExtendedPropertiesDescriptor_t;
