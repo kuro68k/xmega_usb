@@ -48,6 +48,7 @@
  */
 #define USB_HID
 #define USB_HID_REPORT_SIZE		3
+#define USB_HID_POLL_RATE_MS	0x08		// HID polling rate in milliseconds
 
 
 /* USB clock configuration

@@ -146,7 +146,7 @@ const __flash ConfigDesc configuration_descriptor = {
 		.bEndpointAddress = 0x81,
 		.bmAttributes = (USB_EP_TYPE_INTERRUPT),
 		.wMaxPacketSize = 64,
-		.bInterval = 0x08
+		.bInterval = USB_HID_POLL_RATE_MS
 	},
 #else
 	.Interface0 = {

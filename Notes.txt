@@ -64,3 +64,4 @@ To do
 - Reduce EP0 buffer size, perhaps to max descriptor size
 - Sort out callback functions
 - Minimize exposed variables/functions via usb.h
+- Compliance testing
