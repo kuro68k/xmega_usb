@@ -141,10 +141,10 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="descriptors.c">
+    <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="main.c">
+    <Compile Include="usb\descriptors.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="usb\dfu.h">
@@ -165,21 +165,20 @@
     <Compile Include="usb\usb_standard.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="usb\usb_xmega.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="usb\usb_xmega.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="usb\usb_xmega_internal.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="usb_config.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="xmega\usb_xmega.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="xmega\usb_xmega.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="xmega\usb_xmega_internal.h">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="xmega" />
     <Folder Include="usb" />
   </ItemGroup>
   <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Compiler.targets" />

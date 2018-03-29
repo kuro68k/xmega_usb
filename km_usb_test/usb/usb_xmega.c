@@ -10,8 +10,8 @@
 #include <avr/io.h>
 
 #include "usb.h"
-#include "xmega/usb_xmega.h"
-#include "xmega/usb_xmega_internal.h"
+#include "usb_xmega.h"
+#include "usb_xmega_internal.h"
 
 
 #define _USB_EP(epaddr) \

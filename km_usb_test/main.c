@@ -7,7 +7,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
-#include "xmega/usb_xmega.h"
+#include "usb_xmega.h"
 #include "hid.h"
 
 int main(void)

@@ -9,7 +9,7 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include <string.h>
-#include "xmega/usb_xmega.h"
+#include "usb_xmega.h"
 #include "dfu.h"
 #include "usb_config.h"
 
