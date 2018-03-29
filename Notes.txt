@@ -39,7 +39,7 @@ HID
 ===============================================================================
 
 Define USB_HID to enable. Bulk endpoints will be disabled. Can be combined with
-DFU runtime support.
+DFU runtime support. HID has one IN endpoint.
 
 USB_HID_REPORT_SIZE must match what the report descriptor describes, or Windows
 will stop polling.
@@ -59,6 +59,8 @@ on Windows.
 dfu_cb_enter_dfu_mode() is called to start DFU mode (the bootloader). The
 example code creates a watchdog reset with time for a response to be sent to
 the host. Add any additional code needed to start the bootloader here.
+
+DFU doesn't use any endpoints, everything is sent over the control interface.
 
 
 WCID
