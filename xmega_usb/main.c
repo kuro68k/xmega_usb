@@ -1,5 +1,5 @@
 /*
- * km_usb_test.c
+ * main.c
  *
  * Copyright 2018 Paul Qureshi
  */
