@@ -1,13 +1,11 @@
 # Minimal, portable USB stack
 
-Fork of: https://github.com/kevinmehall/usb
+Originally a fork of https://github.com/kevinmehall/usb, but it has since diverged significantly.
 
-WCID supported added to minimal example. Note that you need at least one endpoint for WCID to work.
+- WCID support. Note that you need at least one endpoint for WCID to work.
+- HID support.
+- Bulk endpoint support, can achive about 8Mb/sec.
 
-Enabled multi-packet mode for IN transfers greater than 64 bytes. These only work when the data buffer is in RAM, data in program memory is copied to a 64 byte buffer before sending. This is mainly to support WCID descriptors.
+See notes.txt for more details.
 
-Added some comments to help configure the stack. Tested and verified operation a little.
-
-Minimal example with WCID and 1 bulk IN/OUT endpoint comes in at around 2.5k flash and 400 bytes of RAM.
-
-MIT license.
+GPL v3 licence.
