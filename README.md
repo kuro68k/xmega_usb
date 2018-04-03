@@ -1,4 +1,4 @@
-# Minimal, portable USB stack
+# Minimal USB stack for XMEGA micros
 
 Originally a fork of https://github.com/kevinmehall/usb, but it has since diverged significantly.
 
