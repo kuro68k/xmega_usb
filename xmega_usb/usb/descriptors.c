@@ -78,6 +78,7 @@ const __flash uint8_t hid_report_descriptor[] = {
     0x81, 0x02,                    //   INPUT (Data,Var,Abs)
     0xc0                           // END_COLLECTION
 };
+_Static_assert(sizeof(hid_report_descriptor) <= USB_EP0_BUFFER_SIZE, "HID descriptor exceeds EP0 buffer size");
 #endif
 
 
@@ -88,7 +89,7 @@ typedef struct {
 	USB_ConfigurationDescriptor_t	Config;
 	USB_InterfaceDescriptor_t		Interface0;
 #ifdef USB_HID
-	USB_HIDDescriptor_t			HIDDescriptor;
+	USB_HIDDescriptor_t				HIDDescriptor;
 	USB_EndpointDescriptor_t		HIDEndpoint;
 #else
 	USB_EndpointDescriptor_t		DataInEndpoint;
@@ -96,9 +97,11 @@ typedef struct {
 #endif
 #ifdef USB_DFU_RUNTIME
 	USB_InterfaceDescriptor_t		DFU_intf_runtime;
-	DFU_FunctionalDescriptor_t	DFU_desc_runtime;
+	DFU_FunctionalDescriptor_t		DFU_desc_runtime;
 #endif
 } ConfigDesc_t;
+
+_Static_assert(sizeof(ConfigDesc_t) <= USB_EP0_BUFFER_SIZE, "Configuration descriptor exceeds EP0 buffer size");
 
 
 /**************************************************************************************************
@@ -225,12 +228,17 @@ const __flash USB_StringDescriptor_t product_string = {
 	.bString = USTRING(USB_STRING_PRODUCT)
 };
 
+_Static_assert(sizeof(language_string) <= USB_EP0_BUFFER_SIZE, "Language string exceeds EP0 buffer size");
+_Static_assert(sizeof(manufacturer_string) <= USB_EP0_BUFFER_SIZE, "Language string exceeds EP0 buffer size");
+_Static_assert(sizeof(product_string) <= USB_EP0_BUFFER_SIZE, "Language string exceeds EP0 buffer size");
+
 #ifdef USB_DFU_RUNTIME
 const __flash USB_StringDescriptor_t dfu_runtime_string = {
 	.bLength = USB_STRING_LEN("Runtime"),
 	.bDescriptorType = USB_DTYPE_String,
 	.bString = u"Runtime"
 };
+_Static_assert(sizeof(dfu_runtime_string) <= USB_EP0_BUFFER_SIZE, "DFU runtime string exceeds EP0 buffer size");
 #endif // USB_DFU_RUNTIME
 
 
@@ -286,6 +294,8 @@ void generate_serial(void)
 		c += 2;
 	}
 }
+
+_Static_assert((22*2) <= USB_EP0_BUFFER_SIZE, "Serial number string exceeds EP0 buffer size");
 #endif
 
 
@@ -298,6 +308,7 @@ const __flash USB_StringDescriptor_t msft_string = {
 	.bDescriptorType = USB_DTYPE_String,
 	.bString = u"MSFT100" WCID_REQUEST_ID_STR
 };
+_Static_assert(sizeof(msft_string) <= USB_EP0_BUFFER_SIZE, "MSFT WCID string exceeds EP0 buffer size");
 
 __attribute__((__aligned__(2))) const USB_MicrosoftCompatibleDescriptor_t msft_compatible = {
 	.dwLength = sizeof(USB_MicrosoftCompatibleDescriptor_t) +
@@ -320,6 +331,7 @@ __attribute__((__aligned__(2))) const USB_MicrosoftCompatibleDescriptor_t msft_c
 		},
 	}
 };
+_Static_assert(sizeof(msft_compatible) <= USB_EP0_BUFFER_SIZE, "MSFT compatible descriptor exceeds EP0 buffer size");
 
 #ifdef USB_WCID_EXTENDED
 // example of two extended properties
@@ -377,6 +389,8 @@ __attribute__((__aligned__(4))) const USB_MicrosoftExtendedPropertiesDescriptor 
 	.data = L"{42314231-5A81-49F0-BC3D-A4FF138216D7}\0\0",
 };
 */
+
+_Static_assert(sizeof(msft_extended) <= USB_EP0_BUFFER_SIZE, "MSFT extended descriptor exceeds EP0 buffer size");
 #endif // USB_WCID_EXTENDED
 
 void handle_msft_compatible(void)
