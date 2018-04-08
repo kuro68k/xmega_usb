@@ -20,6 +20,9 @@ typedef size_t usb_size;
 typedef uint8_t usb_ep;
 typedef uint8_t usb_bank;
 
+/// Configure the XMEGA's clock for use with USB.
+void usb_configure_clock(void);
+
 /// Callback for a SET_CONFIGURATION request
 bool usb_cb_set_configuration(uint8_t config);
 
