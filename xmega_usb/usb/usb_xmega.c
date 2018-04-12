@@ -12,6 +12,7 @@
 #include "usb.h"
 #include "usb_xmega.h"
 #include "usb_xmega_internal.h"
+#include "xmega.h"
 
 
 #define _USB_EP(epaddr) \
@@ -20,43 +21,14 @@
 
 
 /**************************************************************************************************
-* Write register protected by change protection register
-*/
-void CCPWrite(volatile uint8_t *address, uint8_t value)
-{
-	uint8_t	saved_sreg;
-
-	// disable interrupts if running
-	saved_sreg = SREG;
-	cli();
-
-	volatile uint8_t * tmpAddr = address;
-	RAMPZ = 0;
-
-	asm volatile(
-	"movw r30,  %0"       "\n\t"
-	"ldi  r16,  %2"       "\n\t"
-	"out   %3, r16"       "\n\t"
-	"st     Z,  %1"       "\n\t"
-	:
-	: "r" (tmpAddr), "r" (value), "M" (CCP_IOREG_gc), "i" (&CCP)
-	: "r16", "r30", "r31"
-	);
-
-	SREG = saved_sreg;
-}
-
-/**************************************************************************************************
 * Initialize up USB after reset
 */
 void usb_init()
 {
 	uint8_t saved_sreg = SREG;
 	cli();
-	NVM.CMD  = NVM_CMD_READ_CALIB_ROW_gc;
-	USB.CAL0 = pgm_read_byte(offsetof(NVM_PROD_SIGNATURES_t, USBCAL0));
-	NVM.CMD  = NVM_CMD_READ_CALIB_ROW_gc;
-	USB.CAL1 = pgm_read_byte(offsetof(NVM_PROD_SIGNATURES_t, USBCAL1));
+	USB.CAL0 = NVM_read_production_signature_byte(offsetof(NVM_PROD_SIGNATURES_t, USBCAL0));
+	USB.CAL1 = NVM_read_production_signature_byte(offsetof(NVM_PROD_SIGNATURES_t, USBCAL1));
 	SREG = saved_sreg;
 
 	usb_reset();
@@ -292,7 +264,7 @@ ISR(USB_BUSEVENT_vect)
 }
 
 /**************************************************************************************************
-* Handle transaction complete interrupts
+* Handle transaction complete interrupts. Uncomment callbacks if required.
 */
 ISR(USB_TRNCOMPL_vect)
 {
@@ -311,7 +283,6 @@ ISR(USB_TRNCOMPL_vect)
 	else if (status & USB_EP_TRNCOMPL0_bm)
 	{
 		LACR16(&(usb_xmega_endpoints[0].out.STATUS), USB_EP_TRNCOMPL0_bm);
-		// empty
 		//usb_handle_control_out_complete();
 	}
 
@@ -329,6 +300,7 @@ ISR(USB_TRNCOMPL_vect)
 		LACR16(&usb_xmega_endpoints[0].in.STATUS, USB_EP_TRNCOMPL0_bm);
 	}
 
+	// EP1 IN
 	if (usb_xmega_endpoints[1].in.STATUS & USB_EP_TRNCOMPL0_bm)
 	{
 		LACR16(&usb_xmega_endpoints[1].in.STATUS, USB_EP_TRNCOMPL0_bm);
