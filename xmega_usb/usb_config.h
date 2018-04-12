@@ -62,12 +62,8 @@
 static inline void dfu_cb_enter_dfu_mode(void)
 {
 	// watchdog reset gives USB time to send response
-	asm("cli");
 	asm("wdr");
-	CCP = CCP_IOREG_gc;
-	WDT.CTRL = WDT_WPER_128CLK_gc | WDT_ENABLE_bm | WDT_WCEN_bm;
-	asm("sei");
-	return;
+	CCPWrite(&WDT.CTRL, WDT_WPER_128CLK_gc | WDT_ENABLE_bm | WDT_WCEN_bm);
 }
 
 
