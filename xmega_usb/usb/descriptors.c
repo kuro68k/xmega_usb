@@ -12,6 +12,7 @@
 #include "usb_xmega.h"
 #include "dfu.h"
 #include "usb_config.h"
+#include "xmega.h"
 
 // Notes:
 // Fill in msft_extended for WCID
@@ -255,21 +256,12 @@ USB_StringDescriptor serial_string = {
 
 void byte2char16(uint8_t byte, __CHAR16_TYPE__ *c)
 {
-	*c++ = (byte >> 4) < 10 ? (byte >> 4) + '0' : (byte >> 4) + 'A';
-	*c = (byte & 0xF) < 10 ? (byte & 0xF) + '0' : (byte & 0xF) + 'A';
+	*c++ = (byte >> 4) < 10 ? (byte >> 4) + '0' : (byte >> 4) + 'A' - 10;
+	*c = (byte & 0xF) < 10 ? (byte & 0xF) + '0' : (byte & 0xF) + 'A' - 10;
 
 	// this version uses less flash memory
 	//*c++ = 'A' + (byte >> 4);
 	//*c = 'A' + (byte & 0xF);
-}
-
-uint8_t read_calibration_byte(uint16_t address)
-{
-	NVM.CMD = NVM_CMD_READ_CALIB_ROW_gc;
-	uint8_t res;
-	__asm__ ("lpm %0, Z\n" : "=r" (res) : "z" (address));
-	NVM.CMD = NVM_CMD_NO_OPERATION_gc;
-	return res;
 }
 
 void generate_serial(void)
@@ -282,15 +274,15 @@ void generate_serial(void)
 	uint8_t idx = offsetof(NVM_PROD_SIGNATURES_t, LOTNUM0);
 	for (uint8_t i = 0; i < 6; i++)
 	{
-		byte2char16(read_calibration_byte(idx++), c);
+		byte2char16(NVM_read_production_signature_byte(idx++), c);
 		c += 2;
 	}
-	byte2char16(read_calibration_byte(offsetof(NVM_PROD_SIGNATURES_t, WAFNUM)), c);
+	byte2char16(NVM_read_production_signature_byte(offsetof(NVM_PROD_SIGNATURES_t, WAFNUM)), c);
 	c += 2;
 	idx = offsetof(NVM_PROD_SIGNATURES_t, COORDX0);
 	for (uint8_t i = 0; i < 4; i++)
 	{
-		byte2char16(read_calibration_byte(idx++), c);
+		byte2char16(NVM_read_production_signature_byte(idx++), c);
 		c += 2;
 	}
 }
