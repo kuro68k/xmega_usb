@@ -12,10 +12,10 @@
 uint8_t hid_report[USB_HID_REPORT_SIZE] __attribute__((__aligned__(2)));
 
 
-/* Send HID reports
+/* Send HID reports. Blocks until the endpoint is ready.
  */
 void hid_send_report(void)
 {
-	if (usb_ep_is_ready(0x81))
-		usb_ep_start_in(0x81, hid_report, USB_HID_REPORT_SIZE, false);
+	while (!usb_ep_is_ready(0x81));
+	usb_ep_start_in(0x81, hid_report, USB_HID_REPORT_SIZE, false);
 }

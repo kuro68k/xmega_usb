@@ -47,7 +47,7 @@ int main(void)
 	{
 		for (uint8_t i = 0; i < USB_HID_REPORT_SIZE; i++)
 			hid_report[i] += (i+1);
-		_delay_ms(50);
+		//_delay_ms(50);
 		hid_send_report();
 	}
 #endif

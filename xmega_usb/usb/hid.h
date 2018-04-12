@@ -12,6 +12,7 @@
 
 extern uint8_t hid_report[USB_HID_REPORT_SIZE];
 
+
 extern void hid_send_report(void);
 
 

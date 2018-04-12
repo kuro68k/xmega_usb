@@ -82,3 +82,4 @@ To do
 - Sort out callback functions
 - Minimize exposed variables/functions via usb.h
 - Compliance testing
+- Do non-setup packets need to be handled? Might save a few bytes.
