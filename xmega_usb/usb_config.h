@@ -59,6 +59,7 @@
 
 /* DFU callbacks
  */
+extern void	CCPWrite(volatile uint8_t *address, uint8_t value);
 static inline void dfu_cb_enter_dfu_mode(void)
 {
 	// watchdog reset gives USB time to send response
