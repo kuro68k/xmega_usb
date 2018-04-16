@@ -10,28 +10,35 @@
 #define USB_CONFIG_H_
 
 
-/* USB vendor and product IDs, version number
- */
+/****************************************************************************************
+* USB configuration
+*/
+// USB clock
+#define USB_USE_PLL			// configure in usb_configure_clock() in usb_xmega.c
+//#define USB_USE_RC32
+
+
+// USB vendor and product IDs, version number
 #define USB_VID				0x9999
 #define USB_PID				0x007F
 
 #define USB_VERSION_MAJOR	1
 #define USB_VERSION_MINOR	0
 
-/* USB strings
- */
+
+// USB strings
 #define USB_STRING_MANUFACTURER		"Example Manufacturer"
 #define USB_STRING_PRODUCT			"Example Device"
 
 
-/* Generate a USB serial number from the MCU's unique identifiers. Can be
- * disabled to save flash memory.
- */
+// Generate a USB serial number from the MCU's unique identifiers. Can be
+// disabled to save flash memory.
 #define	USB_SERIAL_NUMBER
 
 
-/* Use Microsoft WCID descriptors
- */
+/****************************************************************************************
+* Use Microsoft WCID descriptors
+*/
 #define	USB_WCID
 //#define USB_WCID_EXTENDED
 
@@ -39,26 +46,11 @@
 #define WCID_REQUEST_ID_STR		u"\x22"
 
 
-/* Add DFU run-time interface
- */
+/****************************************************************************************
+* DFU (Device Firmware Update) run-time interface
+*/
 #define USB_DFU_RUNTIME
 
-
-/* Enable HID, otherwise vendor specific bulk endpoints
- */
-#define USB_HID
-#define USB_HID_REPORT_SIZE		3
-#define USB_HID_POLL_RATE_MS	0x08		// HID polling rate in milliseconds
-
-
-/* USB clock configuration
- */
-#define USB_USE_PLL			// configure in usb_configure_clock() in usb_xmega.c
-//#define USB_USE_RC32
-
-
-/* DFU callbacks
- */
 extern void	CCPWrite(volatile uint8_t *address, uint8_t value);
 static inline void dfu_cb_enter_dfu_mode(void)
 {
@@ -68,8 +60,13 @@ static inline void dfu_cb_enter_dfu_mode(void)
 }
 
 
-/* HID callbacks
- */
+/****************************************************************************************
+* Enable HID, otherwise vendor specific bulk endpoints
+*/
+#define USB_HID
+#define USB_HID_REPORT_SIZE		3
+#define USB_HID_POLL_RATE_MS	0x08		// HID polling rate in milliseconds
+
 
 // GET_REPORT handlers. *report is USB_MAX_PACKET_SIZE.
 // Return number of bytes in report, or -1 if not supported
