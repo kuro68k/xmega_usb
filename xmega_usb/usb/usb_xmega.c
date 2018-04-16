@@ -102,7 +102,7 @@ inline void usb_ep_start_out(uint8_t ep, uint8_t* data, usb_size len)
 /**************************************************************************************************
 * Start sending data from buffer to host
 */
-inline void usb_ep_start_in(uint8_t ep, const uint8_t* data, usb_size size, bool zlp)
+void usb_ep_start_in(uint8_t ep, const uint8_t* data, usb_size size, bool zlp)
 {
 	_USB_EP(ep);
 	e->DATAPTR = (unsigned) data;
@@ -132,10 +132,10 @@ inline bool usb_ep_is_transaction_complete(uint8_t ep)
 /**************************************************************************************************
 * Handle a completed transaction on an endpoint
 */
-inline void usb_ep_handle_transaction(uint8_t ep)
+void usb_ep_handle_transaction(uint8_t ep)
 {
 	_USB_EP(ep);
-	LACR16(&(e->STATUS), USB_EP_TRNCOMPL0_bm);
+	LACR16(&(e->STATUS), USB_EP_TRNCOMPL0_bm | USB_EP_BUSNACK0_bm);
 }
 
 /**************************************************************************************************
@@ -150,37 +150,42 @@ inline uint16_t usb_ep_get_out_transaction_length(uint8_t ep)
 /**************************************************************************************************
 * Physically detach from USB bus
 */
-inline void usb_detach(void) ATTR_ALWAYS_INLINE;
-inline void usb_detach(void) {
+void usb_detach(void) {
 	USB.CTRLB &= ~USB_ATTACH_bm;
 }
 
 /**************************************************************************************************
 * Physically attach to USB bus
 */
-inline void usb_attach(void) ATTR_ALWAYS_INLINE;
-inline void usb_attach(void) {
+void usb_attach(void) {
 	USB.CTRLB |= USB_ATTACH_bm;
+}
+
+/**************************************************************************************************
+* Clear SETUP OUT stage on the default control pipe
+*/
+void usb_ep0_clear_out_setup(void) {
+	LACR16(&usb_xmega_endpoints[0].out.STATUS, USB_EP_SETUP_bm | USB_EP_BUSNACK0_bm | USB_EP_TRNCOMPL0_bm | USB_EP_OVF_bm | USB_EP_TOGGLE_bm);
 }
 
 /**************************************************************************************************
 * Enable the OUT stage on the default control pipe
 */
-inline void usb_ep0_out(void) {
+void usb_ep0_out(void) {
 	LACR16(&usb_xmega_endpoints[0].out.STATUS, USB_EP_SETUP_bm | USB_EP_BUSNACK0_bm | USB_EP_TRNCOMPL0_bm | USB_EP_OVF_bm);
 }
 
 /**************************************************************************************************
 * Enable the IN stage on the default control pipe
 */
-inline void usb_ep0_in(uint8_t size){
+void usb_ep0_in(uint8_t size){
 	usb_ep_start_in(0x80, ep0_buf_in, size, true);
 }
 
 /**************************************************************************************************
 * Stall the default control pipe
 */
-inline void usb_ep0_stall(void) {
+void usb_ep0_stall(void) {
 	usb_xmega_endpoints[0].out.CTRL |= USB_EP_STALL_bm;
 	usb_xmega_endpoints[0].in.CTRL  |= USB_EP_STALL_bm;
 }
@@ -192,7 +197,7 @@ void usb_configure_clock()
 {
 #ifdef USB_USE_PLL
 	OSC.XOSCCTRL = OSC_FRQRANGE_12TO16_gc | OSC_XOSCSEL_XTAL_16KCLK_gc;
-    OSC.CTRL |= OSC_XOSCEN_bm;
+	OSC.CTRL |= OSC_XOSCEN_bm;
 	while(!(OSC.STATUS & OSC_XOSCRDY_bm));
 
 	OSC.PLLCTRL = OSC_PLLSRC_XOSC_gc | 3;		// 48MHz for USB
@@ -217,22 +222,22 @@ void usb_configure_clock()
 	DFLLRC32M.CTRL = DFLL_ENABLE_bm;
 
 	CCP = CCP_IOREG_gc; //Security Signature to modify clock
-    OSC.CTRL = OSC_RC32MEN_bm | OSC_RC2MEN_bm; // enable internal 32MHz oscillator
+	OSC.CTRL = OSC_RC32MEN_bm | OSC_RC2MEN_bm; // enable internal 32MHz oscillator
 
-    while(!(OSC.STATUS & OSC_RC32MRDY_bm)); // wait for oscillator ready
+	while(!(OSC.STATUS & OSC_RC32MRDY_bm)); // wait for oscillator ready
 
-    OSC.PLLCTRL = OSC_PLLSRC_RC2M_gc | 16; // 2MHz * 16 = 32MHz
+	OSC.PLLCTRL = OSC_PLLSRC_RC2M_gc | 16; // 2MHz * 16 = 32MHz
 
-    CCP = CCP_IOREG_gc;
-    OSC.CTRL = OSC_RC32MEN_bm | OSC_PLLEN_bm | OSC_RC2MEN_bm ; // Enable PLL
+	CCP = CCP_IOREG_gc;
+	OSC.CTRL = OSC_RC32MEN_bm | OSC_PLLEN_bm | OSC_RC2MEN_bm ; // Enable PLL
 
-    while(!(OSC.STATUS & OSC_PLLRDY_bm)); // wait for PLL ready
+	while(!(OSC.STATUS & OSC_PLLRDY_bm)); // wait for PLL ready
 
-    DFLLRC2M.CTRL = DFLL_ENABLE_bm;
+	DFLLRC2M.CTRL = DFLL_ENABLE_bm;
 
-    CCP = CCP_IOREG_gc; //Security Signature to modify clock
-    CLK.CTRL = CLK_SCLKSEL_PLL_gc; // Select PLL
-    CLK.PSCTRL = 0x00; // No peripheral clock prescaler
+	CCP = CCP_IOREG_gc; //Security Signature to modify clock
+	CLK.CTRL = CLK_SCLKSEL_PLL_gc; // Select PLL
+	CLK.PSCTRL = 0x00; // No peripheral clock prescaler
 
 	CLK.USBCTRL = CLK_USBPSDIV_1_gc | CLK_USBSRC_RC32M_gc | CLK_USBSEN_bm;
 #endif

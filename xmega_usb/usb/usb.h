@@ -78,14 +78,3 @@ usb_size usb_ep_get_out_transaction_length(usb_ep ep);
 void usb_ep_start_in(uint8_t ep, const uint8_t* data, usb_size size, bool zlp);
 
 
-/// Send `size` bytes from ep0_buf_in on endpoint 0
-void usb_ep0_in(uint8_t size);
-
-/// Accept a packet into ep0_buf_out on endpoint 0
-void usb_ep0_out(void);
-
-/// Stall endpoint 0
-void usb_ep0_stall(void);
-
-/// Internal common methods called by the hardware API
-void usb_handle_setup(void);

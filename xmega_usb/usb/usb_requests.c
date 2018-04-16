@@ -10,6 +10,7 @@
 #include <avr/io.h>
 #include "usb.h"
 #include "usb_config.h"
+#include "usb_xmega.h"
 #include "hid.h"
 #include "dfu.h"
 
@@ -107,25 +108,35 @@ void usb_handle_class_setup_requests(void)
 		// IN requests
 		case USB_HIDREQ_GET_REPORT:
 		{
-			uint16_t bytes_in = -1;
 			switch(usb_setup.wValue >> 8)
 			{
 				case USB_HID_REPORT_TYPE_INPUT:
-					hid_send_report();
+				{
+					int16_t size = hid_cb_get_report_input(ep0_buf_in, usb_setup.wIndex & 0xFF);
+					if (size == -1)
+						return usb_ep0_stall();
+					usb_ep0_in(size);
 					return usb_ep0_out();
-					//bytes_in = hid_cb_get_report_input(ep0_buf_in, usb_setup.wValue & 0xFF);
-					//break;
+				}
 				case USB_HID_REPORT_TYPE_OUTPUT:
-					bytes_in = hid_cb_get_report_output(ep0_buf_in, usb_setup.wValue & 0xFF);
-					break;
+				{
+					int16_t size = hid_cb_get_report_output(ep0_buf_in, usb_setup.wValue & 0xFF);
+					if (size == -1)
+						return usb_ep0_stall();
+					usb_ep0_in(size);
+					return usb_ep0_out();
+				}
 				case USB_HID_REPORT_TYPE_FEATURE:
-					bytes_in = hid_cb_get_report_feature(ep0_buf_in, usb_setup.wValue & 0xFF);
-					break;
+				{
+					int16_t size = hid_cb_get_report_feature(ep0_buf_in, usb_setup.wValue & 0xFF);
+					if (size == -1)
+						return usb_ep0_stall();
+					usb_ep0_in(size);
+					return usb_ep0_out();
+				}
+				default:
+					return usb_ep0_stall();
 			}
-			if (bytes_in == -1)
-				return usb_ep0_stall();
-			usb_ep0_in(bytes_in);
-			return usb_ep0_out();
 		}
 
 		case USB_HIDREQ_GET_IDLE:
@@ -140,16 +151,29 @@ void usb_handle_class_setup_requests(void)
 			switch(usb_setup.wValue >> 8)
 			{
 				case USB_HID_REPORT_TYPE_INPUT:
-					return (hid_cb_set_report_input(ep0_buf_out, usb_setup.wLength, usb_setup.wValue & 0xFF) ?
-						usb_ep0_out() : usb_ep0_stall);
+					if (hid_cb_set_report_input(ep0_buf_out, usb_setup.wLength, usb_setup.wValue & 0xFF))
+					{
+						usb_ep0_in(0);
+						return usb_ep0_clear_out_setup();
+					}
+					return usb_ep0_stall();
 				case USB_HID_REPORT_TYPE_OUTPUT:
-					return (hid_cb_set_report_output(ep0_buf_out, usb_setup.wLength, usb_setup.wValue & 0xFF) ?
-						usb_ep0_out() : usb_ep0_stall);
+					if (hid_cb_set_report_output(ep0_buf_out, usb_setup.wLength, usb_setup.wValue & 0xFF))
+					{
+						usb_ep0_in(0);
+						return usb_ep0_clear_out_setup();
+					}
+					return usb_ep0_stall();
 				case USB_HID_REPORT_TYPE_FEATURE:
-					return (hid_cb_set_report_feature(ep0_buf_out, usb_setup.wLength, usb_setup.wValue & 0xFF) ?
-						usb_ep0_out() : usb_ep0_stall);
+					if (hid_cb_set_report_feature(ep0_buf_out, usb_setup.wLength, usb_setup.wValue & 0xFF))
+					{
+						usb_ep0_in(0);
+						return usb_ep0_clear_out_setup();
+					}
+					return usb_ep0_stall();
+				default:
+					return usb_ep0_stall();
 			}
-			return usb_ep0_stall();
 		}
 
 		case USB_HIDREQ_SET_IDLE:

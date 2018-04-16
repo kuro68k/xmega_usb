@@ -73,11 +73,12 @@ static inline void dfu_cb_enter_dfu_mode(void)
 
 // GET_REPORT handlers. *report is USB_MAX_PACKET_SIZE.
 // Return number of bytes in report, or -1 if not supported
-/*
+#include <hid.h>
 static inline uint16_t hid_cb_get_report_input(uint8_t *report, uint8_t report_id)
 {
-	return -1;
-}*/
+	memcpy(report, hid_report, sizeof(hid_report));
+	return sizeof(hid_report);
+}
 
 static inline uint16_t hid_cb_get_report_output(uint8_t *report, uint8_t report_id)
 {

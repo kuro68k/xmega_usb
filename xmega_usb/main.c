@@ -7,7 +7,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
-#include "usb_xmega.h"
+#include "usb.h"
 #include "hid.h"
 
 int main(void)
@@ -32,7 +32,7 @@ int main(void)
 	//for(;;);
 
 	// Enable USB interrupts
-	USB.INTCTRLA = /*USB_SOFIE_bm |*/ USB_BUSEVIE_bm | USB_INTLVL_MED_gc;
+	USB.INTCTRLA = USB_BUSEVIE_bm | USB_INTLVL_MED_gc;
 	USB.INTCTRLB = USB_TRNIE_bm | USB_SETUPIE_bm;
 
 	usb_init();
@@ -48,7 +48,7 @@ int main(void)
 		for (uint8_t i = 0; i < USB_HID_REPORT_SIZE; i++)
 			hid_report[i] += (i+1);
 		//_delay_ms(50);
-		hid_send_report();
+		//hid_send_report();
 	}
 #endif
 

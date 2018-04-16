@@ -1,6 +1,7 @@
 #pragma once
 
 #include "usb.h"
+#include "usb_xmega_internal.h"
 
 /// Copy data from program memory to the ep0 IN buffer
 const uint8_t* usb_ep0_from_progmem(const uint8_t* addr, uint16_t size);
@@ -33,3 +34,19 @@ extern const uint8_t usb_num_endpoints;
 #define USB_ENDPOINTS(NUM_EP) \
 	const uint8_t usb_num_endpoints = (NUM_EP); \
 	USB_EP_pair_t usb_xmega_endpoints[(NUM_EP)+1] __attribute__((aligned(2)));
+
+
+/// Send size bytes from ep0_buf_in on endpoint 0
+void usb_ep0_in(uint8_t size);
+
+/// Clear out setup packet
+void usb_ep0_clear_out_setup(void);
+
+/// Accept a packet into ep0_buf_out on endpoint 0
+void usb_ep0_out(void);
+
+/// Stall endpoint 0
+void usb_ep0_stall(void);
+
+/// Internal common methods called by the hardware API
+void usb_handle_setup(void);
