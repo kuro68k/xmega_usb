@@ -79,8 +79,8 @@ To do
 ===============================================================================
 
 - Reduce EP0 buffer size, perhaps to max descriptor size
-- Sort out callback functions
 - Minimize exposed variables/functions via usb.h
 - Compliance testing
 - Do non-setup packets need to be handled? Might save a few bytes.
-- check usb_size
+- Check usb_size
+- Try making usb_setup and ep0_buf_out a union, maybe save some RAM/cycles
