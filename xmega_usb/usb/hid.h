@@ -5,7 +5,6 @@
  * Human Interface Device support
  */
 
-
 #ifndef HID_H_
 #define HID_H_
 

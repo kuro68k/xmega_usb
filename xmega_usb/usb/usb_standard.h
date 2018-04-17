@@ -1,4 +1,14 @@
-#pragma once
+/* usb_standard.h
+ *
+ * Copyright Dean Camera
+ * Copyright 2018 Paul Qureshi
+ *
+ * Human Interface Device support
+ */
+
+#ifndef USB_STANDARD_H_
+#define USB_STANDARD_H_
+
 
 #include <stdint.h>
 
@@ -13,18 +23,18 @@ typedef enum {
 	USB_SPEED_HIGH,
 } USB_Speed;
 
-#define USB_REQTYPE_DIRECTION_MASK 0x80
-#define USB_REQTYPE_TYPE_MASK 0x60
-#define USB_REQTYPE_RECIPIENT_MASK 0x1F
+#define USB_REQTYPE_DIRECTION_MASK		0x80
+#define USB_REQTYPE_TYPE_MASK			0x60
+#define USB_REQTYPE_RECIPIENT_MASK		0x1F
 
-#define USB_REQTYPE_STANDARD (0 << 5)
-#define USB_REQTYPE_CLASS (1 << 5)
-#define USB_REQTYPE_VENDOR (2 << 5)
+#define USB_REQTYPE_STANDARD			(0 << 5)
+#define USB_REQTYPE_CLASS				(1 << 5)
+#define USB_REQTYPE_VENDOR				(2 << 5)
 
-#define USB_RECIPIENT_DEVICE (0 << 0)
-#define USB_RECIPIENT_INTERFACE (1 << 0)
-#define USB_RECIPIENT_ENDPOINT (2 << 0)
-#define USB_RECIPIENT_OTHER (3 << 0)
+#define USB_RECIPIENT_DEVICE			(0 << 0)
+#define USB_RECIPIENT_INTERFACE			(1 << 0)
+#define USB_RECIPIENT_ENDPOINT			(2 << 0)
+#define USB_RECIPIENT_OTHER				(3 << 0)
 
 typedef struct  {
 	uint8_t bmRequestType;
@@ -110,31 +120,31 @@ typedef enum {
 } USB_cscp;
 
 
-#define USB_CONFIG_POWER_MA(mA) ((mA)/2)
-#define USB_STRING_LEN(s) (sizeof(USB_DescriptorHeader_t) + ((sizeof(s)-1) * 2))
+#define USB_CONFIG_POWER_MA(mA)		((mA)/2)
+#define USB_STRING_LEN(s)			(sizeof(USB_DescriptorHeader_t) + ((sizeof(s)-1) * 2))
 
-#define USB_LANGUAGE_EN_US 0x0409
+#define USB_LANGUAGE_EN_US					0x0409
 
-#define ENDPOINT_DESCRIPTOR_DIR_IN 0x80
-#define ENDPOINT_DESCRIPTOR_DIR_OUT 0x00
+#define ENDPOINT_DESCRIPTOR_DIR_IN			0x80
+#define ENDPOINT_DESCRIPTOR_DIR_OUT			0x00
 
-#define USB_CONFIG_ATTR_BUSPOWERED 0x80
-#define USB_CONFIG_ATTR_SELFPOWERED 0x40
-#define USB_CONFIG_ATTR_REMOTEWAKEUP 0x20
+#define USB_CONFIG_ATTR_BUSPOWERED			0x80
+#define USB_CONFIG_ATTR_SELFPOWERED			0x40
+#define USB_CONFIG_ATTR_REMOTEWAKEUP		0x20
 
-#define ENDPOINT_ATTR_NO_SYNC (0 << 2)
-#define ENDPOINT_ATTR_ASYNC (1 << 2)
-#define ENDPOINT_ATTR_ADAPTIVE (2 << 2)
-#define ENDPOINT_ATTR_SYNC (3 << 2)
+#define ENDPOINT_ATTR_NO_SYNC				(0 << 2)
+#define ENDPOINT_ATTR_ASYNC					(1 << 2)
+#define ENDPOINT_ATTR_ADAPTIVE				(2 << 2)
+#define ENDPOINT_ATTR_SYNC					(3 << 2)
 
-#define ENDPOINT_USAGE_DATA (0 << 4)
-#define ENDPOINT_USAGE_FEEDBACK (1 << 4)
-#define ENDPOINT_USAGE_IMPLICIT_FEEDBACK (2 << 4)
+#define ENDPOINT_USAGE_DATA					(0 << 4)
+#define ENDPOINT_USAGE_FEEDBACK				(1 << 4)
+#define ENDPOINT_USAGE_IMPLICIT_FEEDBACK	(2 << 4)
 
-#define USB_EP_TYPE_CONTROL 0x00
-#define USB_EP_TYPE_ISOCHRONOUS 0x01
-#define USB_EP_TYPE_BULK 0x02
-#define USB_EP_TYPE_INTERRUPT 0x03
+#define USB_EP_TYPE_CONTROL					0x00
+#define USB_EP_TYPE_ISOCHRONOUS				0x01
+#define USB_EP_TYPE_BULK					0x02
+#define USB_EP_TYPE_INTERRUPT				0x03
 
 typedef struct {
 	uint8_t bLength;
@@ -281,3 +291,6 @@ typedef struct {
 	uint32_t dwDataLength2;
 	wchar_t data2[13];
 } __attribute__((packed)) USB_MicrosoftExtendedPropertiesDescriptor_t;
+
+
+#endif	// USB_STANDARD_H_
