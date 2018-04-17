@@ -109,18 +109,18 @@ _Static_assert(USB_HID_REPORT_SIZE <= USB_EP0_BUFFER_SIZE, "HID report exceeds E
 // GET_REPORT handlers. *report is USB_MAX_PACKET_SIZE.
 // Return number of bytes in report, or -1 if not supported
 #include <hid.h>
-static inline uint16_t hid_cb_get_report_input(uint8_t *report, uint8_t report_id)
+static inline int16_t hid_cb_get_report_input(uint8_t *report, uint8_t report_id)
 {
 	memcpy(report, hid_report, sizeof(hid_report));
 	return sizeof(hid_report);
 }
 
-static inline uint16_t hid_cb_get_report_output(uint8_t *report, uint8_t report_id)
+static inline int16_t hid_cb_get_report_output(uint8_t *report, uint8_t report_id)
 {
 	return -1;
 }
 
-static inline uint16_t hid_cb_get_report_feature(uint8_t *report, uint8_t report_id)
+static inline int16_t hid_cb_get_report_feature(uint8_t *report, uint8_t report_id)
 {
 	return -1;
 }
