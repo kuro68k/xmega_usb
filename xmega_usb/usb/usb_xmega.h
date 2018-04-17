@@ -1,6 +1,5 @@
 #pragma once
 
-#include "usb.h"
 #include "usb_xmega_internal.h"
 
 /// Copy data from program memory to the ep0 IN buffer

@@ -1,14 +1,13 @@
 #pragma once
 
 #include <stdbool.h>
-#include <stdint.h>
 #include <string.h>
-
-#include "usb_standard.h"
-#include "usb_config.h"
 
 #define USB_EP0_MAX_PACKET_SIZE		8
 #define USB_EP0_BUFFER_SIZE			64
+
+#include "usb_standard.h"
+#include "usb_config.h"
 
 extern USB_SetupPacket_t usb_setup;
 extern uint8_t ep0_buf_in[USB_EP0_BUFFER_SIZE];
@@ -76,5 +75,3 @@ usb_size usb_ep_get_out_transaction_length(usb_ep ep);
 /// the callback is called. If zlp is set and the data is not a multiple of the packet
 /// size, an extra zero-length packet will be sent to terminate the transfer.
 void usb_ep_start_in(uint8_t ep, const uint8_t* data, usb_size size, bool zlp);
-
-

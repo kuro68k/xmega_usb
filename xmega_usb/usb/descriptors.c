@@ -9,13 +9,13 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include <string.h>
+#define HID_DECLARE_REPORT_DESCRIPTOR
+#include "usb.h"
 #include "usb_xmega.h"
 #include "dfu.h"
-#include "usb_config.h"
 #include "xmega.h"
+#undef HID_DECLARE_REPORT_DESCRIPTOR
 
-// Notes:
-// Fill in msft_extended for WCID
 
 USB_ENDPOINTS(1);
 
@@ -51,46 +51,6 @@ const __flash USB_DeviceDescriptor_t device_descriptor = {
 
 	.bNumConfigurations     = 1
 };
-
-
-/**************************************************************************************************
-* HID report descriptor
-*/
-#ifdef USB_HID
-const __flash uint8_t hid_report_descriptor[] = {
-	0x05, 0x01,					// USAGE_PAGE (Generic Desktop)
-	0x09, 0x04,					// USAGE (Joystick)
-	0xa1, 0x00,					// COLLECTION (Physical)
-	0x05, 0x09,					//   USAGE_PAGE (Button)
-	0x19, 0x01,					//   USAGE_MINIMUM (Button 1)
-	0x29, 0x08,					//   USAGE_MAXIMUM (Button 8)
-	0x15, 0x00,					//   LOGICAL_MINIMUM (0)
-	0x25, 0x01,					//   LOGICAL_MAXIMUM (1)
-	0x95, 0x08,					//   REPORT_COUNT (8)
-	0x75, 0x01,					//   REPORT_SIZE (1)
-	0x81, 0x02,					//   INPUT (Data,Var,Abs)
-	0x05, 0x01,					//   USAGE_PAGE (Generic Desktop)
-	0x09, 0x30,					//   USAGE (X)
-	0x09, 0x31,					//   USAGE (Y)
-	0x15, 0x81,					//   LOGICAL_MINIMUM (-127)
-	0x25, 0x7f,					//   LOGICAL_MAXIMUM (127)
-	0x75, 0x08,					//   REPORT_SIZE (8)
-	0x95, 0x02,					//   REPORT_COUNT (2)
-	0x81, 0x02,					//   INPUT (Data,Var,Abs)
-
-	0x95, 0x03,					//	 REPORT_COUNT (3)
-	0x09, 0x00,					//	 USAGE (Undefined)
-	0xB2, 0x02, 0x01,			//	 FEATURE (Data,Var,Abs,Buf)
-
-	0x95, 0x03,					//   REPORT_COUNT (3)
-	0x09, 0x00,					//   USAGE (Undefined)
-	0x92, 0x02, 0x01,			//   OUTPUT (Data,Var,Abs,Buf)
-
-	0xc0						// END_COLLECTION
-};
-_Static_assert(sizeof(hid_report_descriptor) <= USB_EP0_BUFFER_SIZE, "HID descriptor exceeds EP0 buffer size");
-_Static_assert(USB_HID_REPORT_SIZE <= USB_EP0_BUFFER_SIZE, "HID report exceeds EP0 buffer size");
-#endif
 
 
 /**************************************************************************************************
