@@ -3,7 +3,7 @@
  * Copyright Dean Camera
  * Copyright 2018 Paul Qureshi
  *
- * Human Interface Device support
+ * Constants and structures that are part of the USB standard
  */
 
 #ifndef USB_STANDARD_H_

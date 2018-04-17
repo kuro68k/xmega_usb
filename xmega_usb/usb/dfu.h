@@ -1,6 +1,9 @@
 /*
  * dfu.h
  *
+ * Copyright 2018 Paul Qureshi
+ *
+ * Device Firmware Update support
  */
 
 
