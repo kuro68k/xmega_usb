@@ -1,4 +1,15 @@
-#pragma once
+/* usb.h
+ *
+ * Copyright 2011-2014 Nonolith Labs
+ * Copyright 2014 Technical Machine
+ * Copyright 2018 Paul Qureshi
+ *
+ * Single include for application code
+ */
+
+#ifndef USB_H_
+#define USB_H_
+
 
 #include <stdbool.h>
 #include <string.h>
@@ -75,3 +86,6 @@ usb_size usb_ep_get_out_transaction_length(usb_ep ep);
 /// the callback is called. If zlp is set and the data is not a multiple of the packet
 /// size, an extra zero-length packet will be sent to terminate the transfer.
 void usb_ep_start_in(uint8_t ep, const uint8_t* data, usb_size size, bool zlp);
+
+
+#endif	// USB_H_
