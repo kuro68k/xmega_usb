@@ -29,6 +29,8 @@ void usb_init()
 	cli();
 	USB.CAL0 = NVM_read_production_signature_byte(offsetof(NVM_PROD_SIGNATURES_t, USBCAL0));
 	USB.CAL1 = NVM_read_production_signature_byte(offsetof(NVM_PROD_SIGNATURES_t, USBCAL1));
+	USB.INTCTRLA = USB_BUSEVIE_bm | USB_INTLVL_MED_gc;
+	USB.INTCTRLB = USB_TRNIE_bm | USB_SETUPIE_bm;
 	SREG = saved_sreg;
 
 	usb_reset();

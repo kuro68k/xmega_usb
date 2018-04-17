@@ -31,10 +31,6 @@ int main(void)
 	//PORTC.DIRSET = PIN7_bm;
 	//for(;;);
 
-	// Enable USB interrupts
-	USB.INTCTRLA = USB_BUSEVIE_bm | USB_INTLVL_MED_gc;
-	USB.INTCTRLB = USB_TRNIE_bm | USB_SETUPIE_bm;
-
 	usb_init();
 
 	PMIC.CTRL = PMIC_LOLVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_HILVLEN_bm;
