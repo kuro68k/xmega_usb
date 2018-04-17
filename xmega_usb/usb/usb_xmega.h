@@ -61,4 +61,4 @@ void usb_ep0_stall(void);
 void usb_handle_setup(void);
 
 
-#endif USB_XMEGA_H_
+#endif // USB_XMEGA_H_
