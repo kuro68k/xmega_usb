@@ -12,6 +12,8 @@
 
 int main(void)
 {
+	usb_configure_clock();
+
 	// debug USART
 	PORTC.DIRSET = PIN7_bm | PIN5_bm | PIN4_bm;
 	PORTC.OUTCLR = PIN4_bm;
@@ -23,8 +25,6 @@ int main(void)
 	USARTC1.CTRLB = USART_TXEN_bm | USART_CLK2X_bm;
 	USARTC1.CTRLC = USART_CHSIZE_8BIT_gc;// | USART_CMODE_MSPI_gc;
 	USARTC1.DATA = 'R';
-
-	usb_configure_clock();
 
 	// clock output check
 	//PORTCFG.CLKEVOUT = PORTCFG_CLKOUTSEL_CLK1X_gc | PORTCFG_CLKOUT_PC7_gc;
@@ -44,7 +44,7 @@ int main(void)
 		for (uint8_t i = 0; i < USB_HID_REPORT_SIZE; i++)
 			hid_report[i] += (i+1);
 		//_delay_ms(50);
-		//hid_send_report();
+		hid_send_report();
 	}
 #endif
 
