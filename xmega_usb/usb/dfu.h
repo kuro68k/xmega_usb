@@ -1,6 +1,9 @@
 /*
  * dfu.h
  *
+ * Copyright 2018 Paul Qureshi
+ *
+ * Device Firmware Update support
  */
 
 
@@ -29,7 +32,7 @@ typedef struct
 	uint16_t	wDetachTimeout;
 	uint16_t	wTransferSize;
 	uint16_t	bcdDFUVersion;
-} DFU_FunctionalDescriptor;
+} DFU_FunctionalDescriptor_t;
 
 
 // DFU requests
@@ -84,13 +87,6 @@ enum {
 	DFU_STATUS_errUNKNOWN				= 0x0E,
 	DFU_STATUS_errSTALLEDPKT			= 0x0F,
 };
-
-
-extern void dfu_set_alternative(uint8_t alt);
-extern void dfu_control_setup(void);
-extern void dfu_control_out_completion(void);
-extern void dfu_control_in_completion(void);
-
 
 
 #endif /* DFU_H_ */

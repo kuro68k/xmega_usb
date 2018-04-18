@@ -1,0 +1,90 @@
+Usage
+===============================================================================
+
+Additional compiler flags:
+	-std=gnu99 -fno-strict-aliasing -Wstrict-prototypes -fno-jump-tables
+
+Clock settings in usb_xmega.c/usb_configure_clock()
+
+
+
+
+
+Limitations
+===============================================================================
+
+- FIFO not supported
+- SOF interrupt not enabled
+
+EP0_BUFFER_SIZE must be large enough for all descriptors.
+
+
+
+Serial numbers
+===============================================================================
+
+A serial number can be generated from the XMEGA's unique ID bytes. The default
+option is proper hexadecimal numbers, but a few bytes can be saved by using a
+simpler alphabetical system.
+
+
+Bulk endpoints
+===============================================================================
+
+Default setting is one bulk in (0x81) and one bulk out (0x02) endpoint. Enable
+with usb_ep_enable() and send data IN with usb_ep_start_in().
+
+
+HID
+===============================================================================
+
+Define USB_HID to enable. Bulk endpoints will be disabled. Can be combined with
+DFU runtime support. HID has one IN endpoint, which is enabled for you.
+
+USB_HID_REPORT_SIZE must match what the report descriptor describes, or Windows
+will stop polling.
+
+Write reports into hid_report. Call hid_send_report() to send report on next
+poll. You should write an initial state report before attaching USB, as the OS
+will probably poll it immediately.
+
+HID allows SET_REPORT to use a dedicated OUT endpoint, but it is optional and
+most people seem to be sending these commands over the control endpoint. As
+such there is no OUT endpoint in HID mode.
+
+
+DFU
+===============================================================================
+
+DFU runtime support allows a host with DFU software to start the bootloader
+over the USB interface. Can be combined with WCID to avoid needing a driver
+on Windows.
+
+dfu_cb_enter_dfu_mode() is called to start DFU mode (the bootloader). The
+example code creates a watchdog reset with time for a response to be sent to
+the host. Add any additional code needed to start the bootloader here.
+
+DFU doesn't use any endpoints, everything is sent over the control interface.
+
+
+WCID
+===============================================================================
+
+WCID is a Microsoft extension that allows USB devices to select the WinUSB
+driver automatically, without the need for .inf files on the host side.
+
+The basic descriptors are fixed (msft_string and msft_compatible). An optional
+extended properties descriptor (msft_extended) is available to poke values into
+the registry, such as a DeviceInterfaceGUID or Label that appears in Device
+Manager. If used the USB_MicrosoftExtendedPropertiesDescriptor
+
+
+To do
+===============================================================================
+
+- Reduce EP0 buffer size, perhaps to max descriptor size
+- Minimize exposed variables/functions via usb.h
+- Compliance testing
+- Do non-setup packets need to be handled? Might save a few bytes.
+- Check usb_size
+- Try making usb_setup and ep0_buf_out a union, maybe save some RAM/cycles

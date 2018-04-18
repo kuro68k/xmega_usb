@@ -12,9 +12,9 @@
     <OutputFileName>$(MSBuildProjectName)</OutputFileName>
     <OutputFileExtension>.elf</OutputFileExtension>
     <OutputDirectory>$(MSBuildProjectDirectory)\$(Configuration)</OutputDirectory>
-    <AssemblyName>km_usb_test</AssemblyName>
-    <Name>km_usb_test</Name>
-    <RootNamespace>km_usb_test</RootNamespace>
+    <AssemblyName>xmega_usb</AssemblyName>
+    <Name>xmega_usb</Name>
+    <RootNamespace>xmega_usb</RootNamespace>
     <ToolchainFlavour>Native</ToolchainFlavour>
     <KeepTimersRunning>true</KeepTimersRunning>
     <OverrideVtor>false</OverrideVtor>
@@ -101,8 +101,8 @@
   <avrgcc.common.Device>-mmcu=atxmega128a3u -B "%24(PackRepoDir)\atmel\XMEGAA_DFP\1.1.68\gcc\dev\atxmega128a3u"</avrgcc.common.Device>
   <avrgcc.common.outputfiles.hex>True</avrgcc.common.outputfiles.hex>
   <avrgcc.common.outputfiles.lss>True</avrgcc.common.outputfiles.lss>
-  <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
-  <avrgcc.common.outputfiles.srec>True</avrgcc.common.outputfiles.srec>
+  <avrgcc.common.outputfiles.eep>False</avrgcc.common.outputfiles.eep>
+  <avrgcc.common.outputfiles.srec>False</avrgcc.common.outputfiles.srec>
   <avrgcc.common.outputfiles.usersignatures>False</avrgcc.common.outputfiles.usersignatures>
   <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
   <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
@@ -110,7 +110,6 @@
     <ListValues>
       <Value>DEBUG</Value>
       <Value>F_CPU=24000000</Value>
-      <Value>F_USB=48000000</Value>
     </ListValues>
   </avrgcc.compiler.symbols.DefSymbols>
   <avrgcc.compiler.directories.IncludePaths>
@@ -126,7 +125,7 @@
   <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
   <avrgcc.compiler.optimization.DebugLevel>Default (-g2)</avrgcc.compiler.optimization.DebugLevel>
   <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
-  <avrgcc.compiler.miscellaneous.OtherFlags>-std=gnu99 -fno-strict-aliasing -Wstrict-prototypes -fno-jump-tables</avrgcc.compiler.miscellaneous.OtherFlags>
+  <avrgcc.compiler.miscellaneous.OtherFlags>-std=gnu99 -fno-strict-aliasing -Wstrict-prototypes -fno-jump-tables -Werror-implicit-function-declaration -Wpointer-arith -mrelax</avrgcc.compiler.miscellaneous.OtherFlags>
   <avrgcc.linker.libraries.Libraries>
     <ListValues>
       <Value>libm</Value>
@@ -142,10 +141,10 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="descriptors.c">
+    <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="main.c">
+    <Compile Include="usb\descriptors.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="usb\dfu.h">
@@ -166,21 +165,26 @@
     <Compile Include="usb\usb_standard.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="usb\usb_xmega.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="usb\usb_xmega.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="usb\usb_xmega_internal.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="usb\xmega.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="usb\xmega.S">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="usb_config.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="xmega\usb_xmega.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="xmega\usb_xmega.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="xmega\usb_xmega_internal.h">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="xmega" />
     <Folder Include="usb" />
   </ItemGroup>
   <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Compiler.targets" />
