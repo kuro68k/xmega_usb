@@ -16,8 +16,11 @@
 #include "xmega.h"
 #undef HID_DECLARE_REPORT_DESCRIPTOR
 
-
+#ifdef USB_HID
 USB_ENDPOINTS(1);
+#else
+USB_ENDPOINTS(2);
+#endif
 
 
 /**************************************************************************************************
@@ -54,14 +57,14 @@ const __flash USB_DeviceDescriptor_t device_descriptor = {
 
 
 /**************************************************************************************************
-* USB device descriptor
+* USB configuration descriptor
 */
 typedef struct {
 	USB_ConfigurationDescriptor_t	Config;
 	USB_InterfaceDescriptor_t		Interface0;
 #ifdef USB_HID
 	USB_HIDDescriptor_t				HIDDescriptor;
-	USB_EndpointDescriptor_t		HIDEndpoint;
+	USB_EndpointDescriptor_t		HIDInEndpoint;
 #else
 	USB_EndpointDescriptor_t		DataInEndpoint;
 	USB_EndpointDescriptor_t		DataOutEndpoint;
@@ -114,7 +117,7 @@ const __flash ConfigDesc_t configuration_descriptor = {
 		.bReportDescriptorType = USB_DTYPE_Report,
 		.wDescriptorLength = sizeof(hid_report_descriptor),
 	},
-	.HIDEndpoint = {
+	.HIDInEndpoint = {
 		.bLength = sizeof(USB_EndpointDescriptor_t),
 		.bDescriptorType = USB_DTYPE_Endpoint,
 		.bEndpointAddress = 0x81,
