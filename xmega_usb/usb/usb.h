@@ -14,7 +14,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define USB_EP0_MAX_PACKET_SIZE		8
+#define USB_EP0_MAX_PACKET_SIZE		64
 #define USB_EP0_BUFFER_SIZE			64
 
 #include "usb_standard.h"
@@ -71,7 +71,7 @@ bool usb_ep_is_ready(usb_ep ep);
 bool usb_ep_is_transaction_complete(usb_ep ep);
 
 /// Clear a completion on an endpoint
-void usb_ep_handle_transaction(usb_ep ep);
+void usb_ep_clear_transaction_complete(usb_ep ep);
 
 /// Start an asynchronous host->device transfer.
 /// The data will be received into data up to size len. This buffer must remain valid until
