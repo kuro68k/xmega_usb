@@ -39,7 +39,7 @@ HID
 ===============================================================================
 
 Define USB_HID to enable. Bulk endpoints will be disabled. Can be combined with
-DFU runtime support. HID has one IN endpoint.
+DFU runtime support. HID has one IN endpoint, which is enabled for you.
 
 USB_HID_REPORT_SIZE must match what the report descriptor describes, or Windows
 will stop polling.
@@ -47,6 +47,10 @@ will stop polling.
 Write reports into hid_report. Call hid_send_report() to send report on next
 poll. You should write an initial state report before attaching USB, as the OS
 will probably poll it immediately.
+
+HID allows SET_REPORT to use a dedicated OUT endpoint, but it is optional and
+most people seem to be sending these commands over the control endpoint. As
+such there is no OUT endpoint in HID mode.
 
 
 DFU
