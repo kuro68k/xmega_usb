@@ -47,10 +47,10 @@ void usb_reset()
 	// endpoint 0 control IN/OUT
 	usb_xmega_endpoints[0].out.STATUS = 0;
 	usb_xmega_endpoints[0].out.CTRL = USB_EP_TYPE_CONTROL_gc | USB_EP_size_to_gc(USB_EP0_MAX_PACKET_SIZE);
-	usb_xmega_endpoints[0].out.DATAPTR = (unsigned) &ep0_buf_out;
+	usb_xmega_endpoints[0].out.DATAPTR = (unsigned) ep0_buf_out;
 	usb_xmega_endpoints[0].in.STATUS = USB_EP_BUSNACK0_bm;
 	usb_xmega_endpoints[0].in.CTRL = USB_EP_TYPE_CONTROL_gc | USB_EP_MULTIPKT_bm | USB_EP_size_to_gc(USB_EP0_MAX_PACKET_SIZE);
-	usb_xmega_endpoints[0].in.DATAPTR = (unsigned) &ep0_buf_in;
+	usb_xmega_endpoints[0].in.DATAPTR = (unsigned) ep0_buf_in;
 
 #ifdef USB_HID
 	usb_ep_enable(0x81, USB_EP_TYPE_BULK_gc, 64, false);
@@ -134,7 +134,7 @@ inline bool usb_ep_is_transaction_complete(uint8_t ep)
 /**************************************************************************************************
 * Handle a completed transaction on an endpoint
 */
-void usb_ep_handle_transaction(uint8_t ep)
+void usb_ep_clear_transaction_complete(uint8_t ep)
 {
 	_USB_EP(ep);
 	LACR16(&(e->STATUS), USB_EP_TRNCOMPL0_bm | USB_EP_BUSNACK0_bm);
@@ -282,14 +282,17 @@ ISR(USB_TRNCOMPL_vect)
 	uint8_t status = usb_xmega_endpoints[0].out.STATUS;		// Read once to prevent race condition
 	if (status & USB_EP_SETUP_bm)
 	{
-		// TODO: race conditions because we can't block a setup packet
 		LACR16(&(usb_xmega_endpoints[0].out.STATUS), USB_EP_TRNCOMPL0_bm | USB_EP_BUSNACK0_bm | USB_EP_SETUP_bm);
 		memcpy(&usb_setup, ep0_buf_out, sizeof(usb_setup));
-		usb_handle_setup();
+		if (((usb_setup.bmRequestType & 0x80) != 0) ||	// IN host requesting response
+			(usb_setup.wLength == 0))					// OUT but no data
+			usb_handle_setup();
+		// else usb_handle_setup() deferred until data stage complete
 	}
 	else if (status & USB_EP_TRNCOMPL0_bm)
 	{
-		LACR16(&(usb_xmega_endpoints[0].out.STATUS), USB_EP_TRNCOMPL0_bm);
+		usb_handle_setup();
+		//LACR16(&(usb_xmega_endpoints[0].out.STATUS), USB_EP_TRNCOMPL0_bm);
 		//usb_handle_control_out_complete();
 	}
 
