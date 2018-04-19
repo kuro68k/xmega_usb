@@ -444,11 +444,19 @@ uint16_t usb_handle_descriptor_request(uint8_t type, uint8_t index) {
 				default:
 					return 0;
 			}
-			size = pgm_read_byte(&((USB_StringDescriptor_t*)address)->bLength);
+#ifdef BOOTLOADER
+			size = pgm_read_byte_far((uint32_t)(uint16_t)address + offsetof(USB_StringDescriptor_t, bLength) + BOOT_SECTION_START);
+#else
+			size = pgm_read_byte_far(&((USB_StringDescriptor_t*)address)->bLength);
+#endif
 			break;
 	}
 
+#ifdef BOOTLOADER
+	memcpy_PF(ep0_buf_in, (uint32_t)(uint16_t)address + BOOT_SECTION_START, size);
+#else
 	memcpy_P(ep0_buf_in, address, size);
+#endif
 	NVM.CMD = cmd_backup;
 	return size;
 }
