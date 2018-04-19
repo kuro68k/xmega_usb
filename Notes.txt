@@ -88,3 +88,6 @@ To do
 - Do non-setup packets need to be handled? Might save a few bytes.
 - Check usb_size
 - Try making usb_setup and ep0_buf_out a union, maybe save some RAM/cycles
+- usb_cb_set_interface() could use max interface from descriptor, but check if
+  it is required by the spec
+- Name internal callback functions better, or move to usb_config.h
