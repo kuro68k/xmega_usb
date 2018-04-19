@@ -194,6 +194,7 @@ void usb_handle_class_setup_requests(void)
 /**************************************************************************************************
 * DFU vendor requests
 */
+#ifdef USB_DFU_RUNTIME
 void dfu_control_setup(void)
 {
 	switch (usb_setup.bRequest)
@@ -235,6 +236,7 @@ void dfu_control_setup(void)
 			return usb_ep0_stall();
 	}
 }
+#endif
 
 /**************************************************************************************************
 * Handle vendor setup requests
