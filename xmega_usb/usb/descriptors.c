@@ -448,8 +448,7 @@ uint16_t usb_handle_descriptor_request(uint8_t type, uint8_t index) {
 			break;
 	}
 
-	for (uint8_t i = 0; i < size; i++)
-		ep0_buf_in[i] = pgm_read_byte(address++);
+	memcpy_P(ep0_buf_in, address, size);
 	NVM.CMD = cmd_backup;
 	return size;
 }
