@@ -387,7 +387,7 @@ void handle_msft_compatible(void)
  *	USB descriptor request handler
  */
 uint16_t usb_handle_descriptor_request(uint8_t type, uint8_t index) {
-	const void* address = NULL;
+	const void *address = NULL;
 	uint16_t size = 0;
 
 	uint8_t cmd_backup = NVM.CMD;

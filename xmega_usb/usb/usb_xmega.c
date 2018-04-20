@@ -281,8 +281,8 @@ ISR(USB_TRNCOMPL_vect)
 	uint8_t status = usb_xmega_endpoints[0].out.STATUS;		// Read once to prevent race condition
 	if (status & USB_EP_SETUP_bm)
 	{
-		LACR16(&(usb_xmega_endpoints[0].out.STATUS), USB_EP_TRNCOMPL0_bm | USB_EP_BUSNACK0_bm | USB_EP_SETUP_bm);
 		memcpy(&usb_setup, ep0_buf_out, sizeof(usb_setup));
+		LACR16(&(usb_xmega_endpoints[0].out.STATUS), USB_EP_TRNCOMPL0_bm | USB_EP_BUSNACK0_bm | USB_EP_SETUP_bm);
 		if (((usb_setup.bmRequestType & 0x80) != 0) ||	// IN host requesting response
 			(usb_setup.wLength == 0))					// OUT but no data
 			usb_handle_setup();
