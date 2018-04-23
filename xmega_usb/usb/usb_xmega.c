@@ -277,14 +277,14 @@ ISR(USB_TRNCOMPL_vect)
 	USB.FIFOWP = 0;	// clear TCIF
 	USB.INTFLAGSBCLR = USB_SETUPIF_bm | USB_TRNIF_bm;
 
-	// Endpoint 0 (default control endpoint)
+	// EP0 (control) OUT/SETUP
 	uint8_t status = usb_xmega_endpoints[0].out.STATUS;		// Read once to prevent race condition
 	if (status & USB_EP_SETUP_bm)
 	{
 		memcpy(&usb_setup, ep0_buf_out, sizeof(usb_setup));
 		LACR16(&(usb_xmega_endpoints[0].out.STATUS), USB_EP_TRNCOMPL0_bm | USB_EP_BUSNACK0_bm | USB_EP_SETUP_bm);
-		if (((usb_setup.bmRequestType & 0x80) != 0) ||	// IN host requesting response
-			(usb_setup.wLength == 0))					// OUT but no data
+		if (((usb_setup.bmRequestType & 0x80) != 0) ||		// IN host requesting response
+			(usb_setup.wLength == 0))						// OUT but no data
 			usb_handle_setup();
 		// else usb_handle_setup() deferred until data stage complete
 	}
@@ -295,7 +295,7 @@ ISR(USB_TRNCOMPL_vect)
 		//usb_handle_control_out_complete();
 	}
 
-	// EP0 IN (control) endpoint
+	// EP0 (control) IN
 	if (usb_xmega_endpoints[0].in.STATUS & USB_EP_TRNCOMPL0_bm)
 	{
 		// SET_ADDRESS requests must only take effect after the response IN packet has
