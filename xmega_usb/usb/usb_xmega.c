@@ -283,14 +283,14 @@ ISR(USB_TRNCOMPL_vect)
 	{
 		memcpy(&usb_setup, ep0_buf_out, sizeof(usb_setup));
 		LACR16(&(usb_xmega_endpoints[0].out.STATUS), USB_EP_TRNCOMPL0_bm | USB_EP_BUSNACK0_bm | USB_EP_SETUP_bm);
-		if (((usb_setup.bmRequestType & 0x80) != 0) ||		// IN host requesting response
-			(usb_setup.wLength == 0))						// OUT but no data
-			usb_handle_setup();
-		// else usb_handle_setup() deferred until data stage complete
+		if (((usb_setup.bmRequestType & 0x80) != 0) ||	// IN host requesting response
+			(usb_setup.wLength == 0))					// OUT but no data
+			usb_handle_control_setup();
+		// else deferred until data stage complete
 	}
 	else if (status & USB_EP_TRNCOMPL0_bm)
 	{
-		usb_handle_setup();
+		usb_handle_control_setup();
 		//LACR16(&(usb_xmega_endpoints[0].out.STATUS), USB_EP_TRNCOMPL0_bm);
 		//usb_handle_control_out_complete();
 	}

@@ -472,10 +472,3 @@ bool usb_cb_set_configuration(uint8_t config) {
 		return false;
 	}
 }
-
-/**************************************************************************************************
- *	Set USB interface
- */
-bool usb_cb_set_interface(uint16_t interface, uint16_t altsetting) {
-	return false;
-}
