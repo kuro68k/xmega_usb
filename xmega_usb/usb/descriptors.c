@@ -163,7 +163,7 @@ const __flash ConfigDesc_t configuration_descriptor = {
 		.bNumEndpoints = 0,
 		.bInterfaceClass = DFU_INTERFACE_CLASS,
 		.bInterfaceSubClass = DFU_INTERFACE_SUBCLASS,
-		.bInterfaceProtocol = DFU_INTERFACE_PROTOCOL_DFUMODE,
+		.bInterfaceProtocol = DFU_INTERFACE_PROTOCOL_RUNTIME,
 		.iInterface = 0x10
 	},
 	.DFU_desc_runtime = {
