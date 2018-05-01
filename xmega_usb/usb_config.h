@@ -19,7 +19,7 @@
 
 // USB vendor and product IDs, version number
 #define USB_VID				0x9999
-#define USB_PID				0x0008
+#define USB_PID				0x000F
 
 #define USB_VERSION_MAJOR	1
 #define USB_VERSION_MINOR	0
@@ -48,7 +48,7 @@
 /****************************************************************************************
 * DFU (Device Firmware Update) run-time interface
 */
-#define USB_DFU_RUNTIME
+//#define USB_DFU_RUNTIME
 
 extern void	CCPWrite(volatile uint8_t *address, uint8_t value);
 static inline void dfu_cb_enter_dfu_mode(void)
@@ -63,7 +63,7 @@ static inline void dfu_cb_enter_dfu_mode(void)
 /****************************************************************************************
 * Enable HID, otherwise vendor specific bulk endpoints
 */
-#define USB_HID
+//#define USB_HID
 #define USB_HID_REPORT_SIZE		3
 #define USB_HID_POLL_RATE_MS	0x08		// HID polling rate in milliseconds
 

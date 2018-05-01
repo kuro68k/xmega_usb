@@ -8,8 +8,6 @@ Clock settings in usb_xmega.c/usb_configure_clock()
 
 
 
-
-
 Limitations
 ===============================================================================
 
