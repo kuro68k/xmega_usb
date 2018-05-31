@@ -150,7 +150,7 @@ void dfu_control_setup(void)
 */
 void usb_handle_class_setup_requests(void)
 {
-#ifdef USB_DFU_RUNTIME
+#if defined(USB_DFU_RUNTIME) || defined(USB_DFU_MODE)
 	if (((usb_setup.bmRequestType & USB_REQTYPE_RECIPIENT_MASK) == USB_RECIPIENT_INTERFACE) &&
 		(usb_setup.wIndex == DFU_INTERFACE))
 		return dfu_control_setup();
@@ -302,7 +302,6 @@ void usb_handle_control_setup(void)
 */
 void usb_handle_control_out(void)
 {
-	usb_handle_control_setup();
 }
 
 /**************************************************************************************************

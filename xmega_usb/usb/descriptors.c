@@ -436,6 +436,14 @@ uint16_t usb_handle_descriptor_request(uint8_t type, uint8_t index) {
 					address = pgm_get_far_address(dfu_runtime_string);
 					break;
 #endif
+#ifdef USB_DFU_MODE
+				case 0x10:
+					address = pgm_get_far_address(dfu_flash_string);
+					break;
+				case 0x11:
+					address = pgm_get_far_address(dfu_eeprom_string);
+					break;
+#endif
 #ifdef USB_WCID
 				case 0xEE:
 					address = pgm_get_far_address(msft_string);
