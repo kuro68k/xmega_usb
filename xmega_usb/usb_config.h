@@ -19,7 +19,7 @@
 
 // USB vendor and product IDs, version number
 #define USB_VID				0x9999
-#define USB_PID				0x000F
+#define USB_PID				0x0114
 
 #define USB_VERSION_MAJOR	1
 #define USB_VERSION_MINOR	0
@@ -39,7 +39,7 @@
 * Use Microsoft WCID descriptors
 */
 #define	USB_WCID
-//#define USB_WCID_EXTENDED
+#define USB_WCID_EXTENDED
 
 #define WCID_REQUEST_ID			0x22
 #define WCID_REQUEST_ID_STR		u"\x22"
@@ -48,12 +48,12 @@
 /****************************************************************************************
 * DFU (Device Firmware Update) run-time interface
 */
-//#define USB_DFU_RUNTIME
+#define USB_DFU_RUNTIME
 
 extern void	CCPWrite(volatile uint8_t *address, uint8_t value);
 static inline void dfu_cb_enter_dfu_mode(void)
 {
-	*(uint32_t *)(0) = 0x4c4f4144;		// "LOAD"
+	//*(uint32_t *)(0) = 0x4c4f4144;		// "LOAD"
 	// watchdog reset gives USB time to send response
 	asm("wdr");
 	CCPWrite(&WDT.CTRL, WDT_WPER_128CLK_gc | WDT_ENABLE_bm | WDT_WCEN_bm);
@@ -63,7 +63,7 @@ static inline void dfu_cb_enter_dfu_mode(void)
 /****************************************************************************************
 * Enable HID, otherwise vendor specific bulk endpoints
 */
-//#define USB_HID
+#define USB_HID
 #define USB_HID_REPORT_SIZE		3
 #define USB_HID_POLL_RATE_MS	0x08		// HID polling rate in milliseconds
 
