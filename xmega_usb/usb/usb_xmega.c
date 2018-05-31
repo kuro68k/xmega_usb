@@ -291,8 +291,8 @@ ISR(USB_TRNCOMPL_vect)
 	else if (status & USB_EP_TRNCOMPL0_bm)
 	{
 		usb_handle_control_setup();
-		//LACR16(&(usb_xmega_endpoints[0].out.STATUS), USB_EP_TRNCOMPL0_bm);
 		//usb_handle_control_out();
+		//LACR16(&(usb_xmega_endpoints[0].out.STATUS), USB_EP_TRNCOMPL0_bm);
 	}
 
 	// EP0 (control) IN
