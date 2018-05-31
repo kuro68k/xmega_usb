@@ -300,6 +300,7 @@ _Static_assert(sizeof(msft_compatible) <= USB_EP0_BUFFER_SIZE, "MSFT compatible 
 
 #ifdef USB_WCID_EXTENDED
 // example of two extended properties
+/*
 __attribute__((__aligned__(2))) const USB_MicrosoftExtendedPropertiesDescriptor_t msft_extended = {
 	.dwLength = sizeof(USB_MicrosoftExtendedPropertiesDescriptor_t),
 	.bcdVersion = 0x0100,
@@ -320,11 +321,11 @@ __attribute__((__aligned__(2))) const USB_MicrosoftExtendedPropertiesDescriptor_
 	.dwDataLength2 = 13*2,
 	.data2 = L"Name56789AB\0",
 };
-
+*/
 /*
 // example of one extended property (WinUSB GUID)
-__attribute__((__aligned__(4))) const USB_MicrosoftExtendedPropertiesDescriptor msft_extended = {
-	.dwLength = sizeof(USB_MicrosoftExtendedPropertiesDescriptor),
+__attribute__((__aligned__(4))) const USB_MicrosoftExtendedPropertiesDescriptor_t msft_extended = {
+	.dwLength = sizeof(USB_MicrosoftExtendedPropertiesDescriptor_t),
 	.dwLength = 142,
 	.bcdVersion = 0x0100,
 	.wIndex = 0x0005,
@@ -337,11 +338,11 @@ __attribute__((__aligned__(4))) const USB_MicrosoftExtendedPropertiesDescriptor 
 	.data = L"{42314231-5A81-49F0-BC3D-A4FF138216D7}\0",
 };
 */
-/*
+
 // example of one extended property (WinUSB GUID) using "DeviceInterfaceGUIDs" (plural)
 // see "important note 2" at https://github.com/pbatard/libwdi/wiki/WCID-Devices#Defining_a_Device_Interface_GUID_or_other_device_specific_properties
-__attribute__((__aligned__(4))) const USB_MicrosoftExtendedPropertiesDescriptor msft_extended = {
-	.dwLength = sizeof(USB_MicrosoftExtendedPropertiesDescriptor),
+__attribute__((__aligned__(4))) const USB_MicrosoftExtendedPropertiesDescriptor_t msft_extended = {
+	.dwLength = sizeof(USB_MicrosoftExtendedPropertiesDescriptor_t),
 	.dwLength = 146,
 	.bcdVersion = 0x0100,
 	.wIndex = 0x0005,
@@ -353,7 +354,7 @@ __attribute__((__aligned__(4))) const USB_MicrosoftExtendedPropertiesDescriptor 
 	.dwDataLength = 80,
 	.data = L"{42314231-5A81-49F0-BC3D-A4FF138216D7}\0\0",
 };
-*/
+
 
 _Static_assert(sizeof(msft_extended) <= USB_EP0_BUFFER_SIZE, "MSFT extended descriptor exceeds EP0 buffer size");
 #endif // USB_WCID_EXTENDED
