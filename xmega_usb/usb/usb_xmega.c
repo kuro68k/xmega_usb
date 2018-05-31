@@ -292,7 +292,7 @@ ISR(USB_TRNCOMPL_vect)
 	{
 		usb_handle_control_setup();
 		//LACR16(&(usb_xmega_endpoints[0].out.STATUS), USB_EP_TRNCOMPL0_bm);
-		//usb_handle_control_out_complete();
+		//usb_handle_control_out();
 	}
 
 	// EP0 (control) IN
@@ -305,7 +305,7 @@ ISR(USB_TRNCOMPL_vect)
 			if (usb_setup.bRequest == USB_REQ_SetAddress)
 					USB.ADDR = usb_setup.wValue & 0x7F;
 		}
-		//usb_handle_control_in_complete();
+		//usb_handle_control_in();
 		LACR16(&usb_xmega_endpoints[0].in.STATUS, USB_EP_TRNCOMPL0_bm);
 	}
 
