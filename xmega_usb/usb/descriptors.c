@@ -275,7 +275,7 @@ const __flash USB_StringDescriptor_t msft_string = {
 };
 _Static_assert(sizeof(msft_string) <= USB_EP0_BUFFER_SIZE, "MSFT WCID string exceeds EP0 buffer size");
 
-__attribute__((__aligned__(2))) const USB_MicrosoftCompatibleDescriptor_t msft_compatible = {
+const __flash USB_MicrosoftCompatibleDescriptor_t msft_compatible = {
 	.dwLength = sizeof(USB_MicrosoftCompatibleDescriptor_t) +
 				1*sizeof(USB_MicrosoftCompatibleDescriptor_Interface_t),
 	.bcdVersion = 0x0100,
@@ -322,11 +322,10 @@ __attribute__((__aligned__(2))) const USB_MicrosoftExtendedPropertiesDescriptor_
 	.data2 = L"Name56789AB\0",
 };
 */
-/*
+
 // example of one extended property (WinUSB GUID)
-__attribute__((__aligned__(4))) const USB_MicrosoftExtendedPropertiesDescriptor_t msft_extended = {
+const __flash USB_MicrosoftExtendedPropertiesDescriptor_t msft_extended = {
 	.dwLength = sizeof(USB_MicrosoftExtendedPropertiesDescriptor_t),
-	.dwLength = 142,
 	.bcdVersion = 0x0100,
 	.wIndex = 0x0005,
 	.wCount = 1,
@@ -337,13 +336,12 @@ __attribute__((__aligned__(4))) const USB_MicrosoftExtendedPropertiesDescriptor_
 	.dwDataLength = 78,
 	.data = L"{42314231-5A81-49F0-BC3D-A4FF138216D7}\0",
 };
-*/
 
+/*
 // example of one extended property (WinUSB GUID) using "DeviceInterfaceGUIDs" (plural)
 // see "important note 2" at https://github.com/pbatard/libwdi/wiki/WCID-Devices#Defining_a_Device_Interface_GUID_or_other_device_specific_properties
 __attribute__((__aligned__(4))) const USB_MicrosoftExtendedPropertiesDescriptor_t msft_extended = {
 	.dwLength = sizeof(USB_MicrosoftExtendedPropertiesDescriptor_t),
-	.dwLength = 146,
 	.bcdVersion = 0x0100,
 	.wIndex = 0x0005,
 	.wCount = 1,
@@ -354,31 +352,39 @@ __attribute__((__aligned__(4))) const USB_MicrosoftExtendedPropertiesDescriptor_
 	.dwDataLength = 80,
 	.data = L"{42314231-5A81-49F0-BC3D-A4FF138216D7}\0\0",
 };
-
+*/
 
 _Static_assert(sizeof(msft_extended) <= USB_EP0_BUFFER_SIZE, "MSFT extended descriptor exceeds EP0 buffer size");
 #endif // USB_WCID_EXTENDED
 
 void handle_msft_compatible(void)
 {
-	const uint8_t *data;
-	uint16_t len;
+	uint32_t address = 0;
+	uint16_t size = 0;
+
+	uint8_t cmd_backup = NVM.CMD;
+	NVM.CMD = 0;
+
 #ifdef USB_WCID_EXTENDED
 	if (usb_setup.wIndex == 0x0005) {
-		len = msft_extended.dwLength;
-		data = (const uint8_t *)&msft_extended;
+		address = pgm_get_far_address(msft_extended);
+		size    = pgm_read_dword_far(address + offsetof(USB_MicrosoftExtendedPropertiesDescriptor_t, dwLength));
 	} else
 #endif
 	if (usb_setup.wIndex == 0x0004) {
-		len = msft_compatible.dwLength;
-		data = (const uint8_t *)&msft_compatible;
+		address = pgm_get_far_address(msft_compatible);
+		size    = pgm_read_dword_far(address + offsetof(USB_MicrosoftCompatibleDescriptor_t, dwLength));
 	} else {
 		return usb_ep0_stall();
 	}
-	if (len > usb_setup.wLength) {
-		len = usb_setup.wLength;
+	if (size > usb_setup.wLength) {
+		size = usb_setup.wLength;
 	}
-	usb_ep_start_in(0x80, data, len, true);
+
+	memcpy_PF(ep0_buf_in, address, size);
+	NVM.CMD = cmd_backup;
+
+	usb_ep0_in(size);
 	usb_ep0_out();
 }
 #endif // USB_WCID

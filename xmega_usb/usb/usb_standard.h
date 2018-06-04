@@ -257,6 +257,21 @@ typedef struct {
 
 #include <stddef.h>	// for wchar_t
 
+// For DeviceInterfaceGUID
+typedef struct {
+	uint32_t dwLength;
+	uint16_t bcdVersion;
+	uint16_t wIndex;
+	uint16_t wCount;
+	uint32_t dwPropLength;
+	uint32_t dwType;
+	uint16_t wNameLength;
+	wchar_t name[20];
+	uint32_t dwDataLength;
+	wchar_t data[39];
+} __attribute__((packed)) USB_MicrosoftExtendedPropertiesDescriptor_t;
+/*
+// For DeviceInterfaceGUIDs (plural)
 typedef struct {
 	uint32_t dwLength;
 	uint16_t bcdVersion;
@@ -269,8 +284,9 @@ typedef struct {
 	uint32_t dwDataLength;
 	wchar_t data[40];
 } __attribute__((packed)) USB_MicrosoftExtendedPropertiesDescriptor_t;
-
+*/
 /*
+// for multiple properties
 typedef struct {
 	uint32_t dwLength;
 	uint16_t bcdVersion;
