@@ -9,6 +9,7 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include <string.h>
+#include <stddef.h>
 #define HID_DECLARE_REPORT_DESCRIPTOR
 #include "usb.h"
 #include "usb_xmega.h"
@@ -299,30 +300,7 @@ const __flash USB_MicrosoftCompatibleDescriptor_t msft_compatible = {
 _Static_assert(sizeof(msft_compatible) <= USB_EP0_BUFFER_SIZE, "MSFT compatible descriptor exceeds EP0 buffer size");
 
 #ifdef USB_WCID_EXTENDED
-// example of two extended properties
 /*
-__attribute__((__aligned__(2))) const USB_MicrosoftExtendedPropertiesDescriptor_t msft_extended = {
-	.dwLength = sizeof(USB_MicrosoftExtendedPropertiesDescriptor_t),
-	.bcdVersion = 0x0100,
-	.wIndex = 0x0005,
-	.wCount = 2,
-
-	.dwPropLength = 132,
-	.dwType = 1,
-	.wNameLength = 40,
-	.name = L"DeviceInterfaceGUID\0",
-	.dwDataLength = 78,
-	.data = L"{42314231-5A81-49F0-BC3D-A4FF138216D7}\0",
-
-	.dwPropLength2 = 14 + (6*2) + (13*2),
-	.dwType2 = 1,
-	.wNameLength2 = 6*2,
-	.name2 = L"Label\0",
-	.dwDataLength2 = 13*2,
-	.data2 = L"Name56789AB\0",
-};
-*/
-
 #ifndef USB_DFU_RUNTIME
 // example of one extended property (WinUSB GUID) for single interface (no DFU)
 // (DeviceInterfaceGUID)
@@ -382,6 +360,50 @@ const __flash USB_MicrosoftExtendedPropertiesDescriptor_t msft_extended = {
 	.data = L"{42314231-5A81-49F0-BC3D-A4FF138216D7}\0\0",
 };
 #endif
+*/
+
+// example of two extended properties
+typedef struct {
+	uint32_t dwLength;
+	uint16_t bcdVersion;
+	uint16_t wIndex;
+	uint16_t wCount;
+
+	uint32_t dwPropLength;
+	uint32_t dwType;
+	uint16_t wNameLength;
+	wchar_t name[20];
+	uint32_t dwDataLength;
+	wchar_t data[39];
+
+	uint32_t dwPropLength2;
+	uint32_t dwType2;
+	uint16_t wNameLength2;
+	wchar_t name2[6];
+	uint32_t dwDataLength2;
+	wchar_t data2[13];
+} __attribute__((packed)) USB_MicrosoftExtendedPropertiesDescriptor_t;
+
+const __flash USB_MicrosoftExtendedPropertiesDescriptor_t msft_extended = {
+	.dwLength = sizeof(USB_MicrosoftExtendedPropertiesDescriptor_t),
+	.bcdVersion = 0x0100,
+	.wIndex = 0x0005,
+	.wCount = 2,
+
+	.dwPropLength = 132,
+	.dwType = 1,
+	.wNameLength = 40,
+	.name = L"DeviceInterfaceGUID\0",
+	.dwDataLength = 78,
+	.data = L"{42314231-5A81-49F0-BC3D-A4FF138216D7}\0",
+
+	.dwPropLength2 = 14 + (6*2) + (13*2),
+	.dwType2 = 1,
+	.wNameLength2 = 6*2,
+	.name2 = L"Label\0",
+	.dwDataLength2 = 13*2,
+	.data2 = L"Name56789AB\0",
+};
 
 _Static_assert(sizeof(msft_extended) <= USB_EP0_BUFFER_SIZE, "MSFT extended descriptor exceeds EP0 buffer size");
 #endif // USB_WCID_EXTENDED
