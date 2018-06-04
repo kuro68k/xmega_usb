@@ -15,7 +15,7 @@
 #include <string.h>
 
 #define USB_EP0_MAX_PACKET_SIZE		64
-#define USB_EP0_BUFFER_SIZE			200
+#define USB_EP0_BUFFER_SIZE			194
 
 #include "usb_standard.h"
 #include "usb_config.h"
