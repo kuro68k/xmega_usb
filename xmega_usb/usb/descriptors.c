@@ -323,7 +323,22 @@ __attribute__((__aligned__(2))) const USB_MicrosoftExtendedPropertiesDescriptor_
 };
 */
 
-// example of one extended property (WinUSB GUID)
+#ifndef USB_DFU_RUNTIME
+// example of one extended property (WinUSB GUID) for single interface (no DFU)
+// (DeviceInterfaceGUID)
+typedef struct {
+	uint32_t dwLength;
+	uint16_t bcdVersion;
+	uint16_t wIndex;
+	uint16_t wCount;
+	uint32_t dwPropLength;
+	uint32_t dwType;
+	uint16_t wNameLength;
+	wchar_t name[20];
+	uint32_t dwDataLength;
+	wchar_t data[39];
+} __attribute__((packed)) USB_MicrosoftExtendedPropertiesDescriptor_t;
+
 const __flash USB_MicrosoftExtendedPropertiesDescriptor_t msft_extended = {
 	.dwLength = sizeof(USB_MicrosoftExtendedPropertiesDescriptor_t),
 	.bcdVersion = 0x0100,
@@ -336,11 +351,25 @@ const __flash USB_MicrosoftExtendedPropertiesDescriptor_t msft_extended = {
 	.dwDataLength = 78,
 	.data = L"{42314231-5A81-49F0-BC3D-A4FF138216D7}\0",
 };
+#else
+// example of one extended property (WinUSB GUID) for multiple interfaces (DFU runtime)
+// (DeviceInterfaceGUIDs)
+// See "important note 2" at https://github.com/pbatard/libwdi/wiki/WCID-Devices#Defining_a_Device_Interface_GUID_or_other_device_specific_properties
+typedef struct {
+	uint32_t dwLength;
+	uint16_t bcdVersion;
+	uint16_t wIndex;
+	uint16_t wCount;
+	uint32_t dwPropLength;
+	uint32_t dwType;
 
-/*
-// example of one extended property (WinUSB GUID) using "DeviceInterfaceGUIDs" (plural)
-// see "important note 2" at https://github.com/pbatard/libwdi/wiki/WCID-Devices#Defining_a_Device_Interface_GUID_or_other_device_specific_properties
-__attribute__((__aligned__(4))) const USB_MicrosoftExtendedPropertiesDescriptor_t msft_extended = {
+	uint16_t wNameLength;
+	wchar_t name[21];
+	uint32_t dwDataLength;
+	wchar_t data[40];
+} __attribute__((packed)) USB_MicrosoftExtendedPropertiesDescriptor_t;
+
+const __flash USB_MicrosoftExtendedPropertiesDescriptor_t msft_extended = {
 	.dwLength = sizeof(USB_MicrosoftExtendedPropertiesDescriptor_t),
 	.bcdVersion = 0x0100,
 	.wIndex = 0x0005,
@@ -352,7 +381,7 @@ __attribute__((__aligned__(4))) const USB_MicrosoftExtendedPropertiesDescriptor_
 	.dwDataLength = 80,
 	.data = L"{42314231-5A81-49F0-BC3D-A4FF138216D7}\0\0",
 };
-*/
+#endif
 
 _Static_assert(sizeof(msft_extended) <= USB_EP0_BUFFER_SIZE, "MSFT extended descriptor exceeds EP0 buffer size");
 #endif // USB_WCID_EXTENDED
