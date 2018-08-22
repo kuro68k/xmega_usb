@@ -391,14 +391,14 @@ const __flash USB_MicrosoftExtendedPropertiesDescriptor_t msft_extended = {
 	.wCount = 2,
 
 	.dwPropLength = 132,
-	.dwType = 1,
+	.dwType = 7,
 	.wNameLength = 40,
 	.name = L"DeviceInterfaceGUID\0",
 	.dwDataLength = 78,
 	.data = L"{42314231-5A81-49F0-BC3D-A4FF138216D7}\0",
 
 	.dwPropLength2 = 14 + (6*2) + (13*2),
-	.dwType2 = 1,
+	.dwType2 = 7,
 	.wNameLength2 = 6*2,
 	.name2 = L"Label\0",
 	.dwDataLength2 = 13*2,
