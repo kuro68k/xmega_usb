@@ -13,8 +13,8 @@
 * USB configuration
 */
 // USB clock
-#define USB_USE_PLL			// configure in usb_configure_clock() in usb_xmega.c
-//#define USB_USE_RC32
+//#define USB_USE_PLL			// configure in usb_configure_clock() in usb_xmega.c
+#define USB_USE_RC32
 
 
 // USB vendor and product IDs, version number

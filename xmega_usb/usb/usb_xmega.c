@@ -25,13 +25,10 @@
 */
 void usb_init()
 {
-	uint8_t saved_sreg = SREG;
-	cli();
 	USB.CAL0 = NVM_read_production_signature_byte(offsetof(NVM_PROD_SIGNATURES_t, USBCAL0));
 	USB.CAL1 = NVM_read_production_signature_byte(offsetof(NVM_PROD_SIGNATURES_t, USBCAL1));
 	USB.INTCTRLA = USB_BUSEVIE_bm | USB_INTLVL_MED_gc;
 	USB.INTCTRLB = USB_TRNIE_bm | USB_SETUPIE_bm;
-	SREG = saved_sreg;
 
 	usb_reset();
 }
@@ -215,30 +212,19 @@ void usb_configure_clock()
 #endif
 
 #ifdef USB_USE_RC32
+	OSC.CTRL |= OSC_RC32MEN_bm;
+	while(!(OSC.STATUS & OSC_RC32MRDY_bm));
+
 	// Configure DFLL for 48MHz, calibrated by USB SOF
 	OSC.DFLLCTRL = OSC_RC32MCREF_USBSOF_gc;
+	DFLLRC32M.CALA = NVM_read_production_signature_byte(offsetof(NVM_PROD_SIGNATURES_t, USBRCOSCA));
 	DFLLRC32M.CALB = NVM_read_production_signature_byte(offsetof(NVM_PROD_SIGNATURES_t, USBRCOSC));
-	DFLLRC32M.COMP1 = 0x1B; //Xmega AU manual, 4.17.19
+	DFLLRC32M.COMP1 = 0x1B;				// XMEGA AU manual 7.11.5, 4.17.19
 	DFLLRC32M.COMP2 = 0xB7;
 	DFLLRC32M.CTRL = DFLL_ENABLE_bm;
 
-	CCP = CCP_IOREG_gc; //Security Signature to modify clock
-	OSC.CTRL = OSC_RC32MEN_bm | OSC_RC2MEN_bm; // enable internal 32MHz oscillator
-
-	while(!(OSC.STATUS & OSC_RC32MRDY_bm)); // wait for oscillator ready
-
-	OSC.PLLCTRL = OSC_PLLSRC_RC2M_gc | 16; // 2MHz * 16 = 32MHz
-
-	CCP = CCP_IOREG_gc;
-	OSC.CTRL = OSC_RC32MEN_bm | OSC_PLLEN_bm | OSC_RC2MEN_bm ; // Enable PLL
-
-	while(!(OSC.STATUS & OSC_PLLRDY_bm)); // wait for PLL ready
-
-	DFLLRC2M.CTRL = DFLL_ENABLE_bm;
-
-	CCP = CCP_IOREG_gc; //Security Signature to modify clock
-	CLK.CTRL = CLK_SCLKSEL_PLL_gc; // Select PLL
-	CLK.PSCTRL = 0x00; // No peripheral clock prescaler
+	CCPWrite(&CLK.PSCTRL, CLK_PSADIV_2_gc | CLK_PSBCDIV_1_1_gc);
+	CCPWrite(&CLK.CTRL, CLK_SCLKSEL_RC32M_gc);
 
 	CLK.USBCTRL = CLK_USBPSDIV_1_gc | CLK_USBSRC_RC32M_gc | CLK_USBSEN_bm;
 #endif
