@@ -15,6 +15,9 @@
 #include "xmega.h"
 
 
+volatile bool usb_suspended_AT = false;
+volatile uint16_t *usb_framenum = &usb_memory.framenum;
+
 #define _USB_EP(epaddr) \
 	USB_EP_pair_t* pair = &usb_xmega_endpoints[(epaddr & 0x3F)]; \
 	USB_EP_t* e __attribute__ ((unused)) = &pair->ep[!!(epaddr&0x80)]; \
@@ -53,7 +56,7 @@ void usb_reset()
 	usb_ep_enable(0x81, USB_EP_TYPE_BULK_gc, 64, false);
 #endif
 
-	USB.CTRLA = USB_ENABLE_bm | USB_SPEED_bm | usb_num_endpoints;
+	USB.CTRLA = USB_ENABLE_bm | USB_SPEED_bm | USB_STFRNUM_bm | USB_NUM_ENDPOINTS;
 }
 
 /**************************************************************************************************
@@ -80,7 +83,7 @@ inline void usb_ep_disable(uint8_t ep)
 }
 
 /**************************************************************************************************
-* Reset endpoint, clearing all error flags and making ready for use.
+* Reset endpoint, clearing all error flags and making it ready for use.
 */
 inline void usb_ep_reset(uint8_t ep)
 {
@@ -158,6 +161,20 @@ void usb_detach(void) {
 */
 void usb_attach(void) {
 	USB.CTRLB |= USB_ATTACH_bm;
+}
+
+/**************************************************************************************************
+* Sent wakeup to host
+*/
+void usb_wakeup(void) {
+	if (usb_wakeup_enabled_by_host)
+	{
+		USB.CTRLB |= USB_RWAKEUP_bm;
+		_delay_ms(5);
+		USB.CTRLB &= ~USB_RWAKEUP_bm;
+		USB.INTFLAGSACLR = USB_SUSPENDIF_bm;
+		usb_suspended_AT = false;
+	}
 }
 
 /**************************************************************************************************
@@ -252,7 +269,16 @@ ISR(USB_BUSEVENT_vect)
 	//if (USB.INTFLAGSACLR & USB_SOFIF_bm)
 	//	USB.INTFLAGSACLR = USB_SOFIF_bm;
 
-	USB.INTFLAGSACLR = USB_SUSPENDIF_bm | USB_RESUMEIF_bm;
+	if (USB.INTFLAGSACLR & USB_SUSPENDIF_bm)
+	{
+		USB.INTFLAGSACLR = USB_SUSPENDIF_bm;
+		usb_suspended_AT = true;
+	}
+	if (USB.INTFLAGSACLR & USB_RESUMEIF_bm)
+	{
+		USB.INTFLAGSACLR = USB_RESUMEIF_bm;
+		usb_suspended_AT = false;
+	}
 }
 
 /**************************************************************************************************
@@ -277,8 +303,6 @@ ISR(USB_TRNCOMPL_vect)
 	else if (status & USB_EP_TRNCOMPL0_bm)
 	{
 		usb_handle_control_setup();
-		//usb_handle_control_out();
-		//LACR16(&(usb_xmega_endpoints[0].out.STATUS), USB_EP_TRNCOMPL0_bm);
 	}
 
 	// EP0 (control) IN

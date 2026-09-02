@@ -12,10 +12,11 @@
 
 
 #include "usb_xmega_internal.h"
+#include "usb_config.h"
 
-typedef union USB_EP_pair{
-	union{
-		struct{
+typedef union USB_EP_pair {
+	union {
+		struct {
 			USB_EP_t out;
 			USB_EP_t in;
 		};
@@ -23,8 +24,15 @@ typedef union USB_EP_pair{
 	};
 } __attribute__((packed)) USB_EP_pair_t;
 
+typedef struct {
+	USB_EP_pair_t usb_xmega_endpoints[(USB_NUM_ENDPOINTS)+1];
+	uint16_t framenum;
+} __attribute__((aligned(2))) USB_MEMORY_t;
+
+
 //extern USB_EP_pair_t *usb_xmega_endpoints;	// for FIFO mode
-extern USB_EP_pair_t usb_xmega_endpoints[];
+extern USB_MEMORY_t usb_memory;
+extern USB_EP_pair_t *usb_xmega_endpoints;
 extern const uint8_t usb_num_endpoints;
 
 /* FIFO mode
@@ -38,8 +46,8 @@ extern const uint8_t usb_num_endpoints;
 */
 
 #define USB_ENDPOINTS(NUM_EP) \
-	const uint8_t usb_num_endpoints = (NUM_EP); \
-	USB_EP_pair_t usb_xmega_endpoints[(NUM_EP)+1] __attribute__((aligned(2)));
+	USB_MEMORY_t usb_memory;							\
+	USB_EP_pair_t *usb_xmega_endpoints = usb_memory.usb_xmega_endpoints;
 
 
 /// Copy data from program memory to the ep0 IN buffer

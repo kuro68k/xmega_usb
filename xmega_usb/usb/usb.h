@@ -20,11 +20,16 @@
 #include "usb_standard.h"
 #include "usb_config.h"
 
+// usb_requests.c
 extern USB_SetupPacket_t usb_setup;
 extern uint8_t ep0_buf_in[USB_EP0_BUFFER_SIZE];
 extern uint8_t ep0_buf_out[USB_EP0_BUFFER_SIZE];
-extern volatile uint8_t USB_DeviceState;
-extern volatile uint8_t USB_Device_ConfigurationNumber;
+extern volatile uint8_t usb_configuration;
+extern volatile bool usb_wakeup_enabled_by_host;
+extern volatile uint16_t *usb_framenum;
+
+// usb_xmega.c
+extern volatile bool usb_suspended_AT;
 
 typedef size_t usb_size;
 typedef uint8_t usb_ep;
@@ -44,6 +49,9 @@ void usb_attach(void);
 
 /// Disconnect from the host
 void usb_detach(void);
+
+// Wake the host (if the host enabled wakeup)
+void usb_wakeup(void);
 
 /// Called internally on USB reset
 void usb_reset(void);
@@ -83,6 +91,13 @@ usb_size usb_ep_get_out_transaction_length(usb_ep ep);
 /// the callback is called. If zlp is set and the data is not a multiple of the packet
 /// size, an extra zero-length packet will be sent to terminate the transfer.
 void usb_ep_start_in(uint8_t ep, const uint8_t* data, usb_size size, bool zlp);
+
+
+/****************************************************************************************
+* Callbacks. Defined as weak functions so that you can override them if required.
+* Note that callbacks are executing from the USB interrupt.
+*/
+extern void usb_setup_vendor_request_cb(void);
 
 
 #endif	// USB_H_

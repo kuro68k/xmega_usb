@@ -1,4 +1,4 @@
-/* usb_xmega.c
+/* usb_requests.c
  *
  * Copyright 2011-2014 Nonolith Labs
  * Copyright 2014 Technical Machine
@@ -17,8 +17,8 @@
 USB_SetupPacket_t usb_setup;
 __attribute__((__aligned__(2))) uint8_t ep0_buf_in[USB_EP0_BUFFER_SIZE];
 __attribute__((__aligned__(2))) uint8_t ep0_buf_out[USB_EP0_BUFFER_SIZE];
-volatile uint8_t usb_configuration;
-
+volatile uint8_t usb_configuration = 0;
+volatile bool usb_wakeup_enabled_by_host = false;
 
 extern uint16_t usb_handle_descriptor_request(uint8_t type, uint8_t index);
 extern void handle_msft_compatible(void);
@@ -42,9 +42,30 @@ void usb_handle_standard_setup_requests(void)
 			return usb_ep0_out();
 
 		case USB_REQ_ClearFeature:
+			switch (usb_setup.wValue)
+			{
+				case USB_FEATURE_DeviceRemoteWakeup:
+					usb_wakeup_enabled_by_host = false;
+					usb_ep0_in(0);
+					break;
+				default:
+					usb_ep0_stall();
+					//usb_ep0_in(0);
+					break;
+			}
+			return usb_ep0_out();
+
 		case USB_REQ_SetFeature:
-			// not implemented
+			switch (usb_setup.wValue)
+			{
+				case USB_FEATURE_DeviceRemoteWakeup:
+					usb_wakeup_enabled_by_host = true;
 			usb_ep0_in(0);
+					break;
+				default:
+					usb_ep0_stall();
+					break;
+			}
 			return usb_ep0_out();
 
 		case USB_REQ_SetAddress:
@@ -272,7 +293,12 @@ void usb_handle_vendor_setup_requests(void)
 		}
 	}
 
-	return usb_ep0_stall();
+	usb_setup_vendor_request_cb();
+}
+
+__attribute__((weak)) void usb_setup_vendor_request_cb(void)
+{
+	usb_ep0_stall();
 }
 
 /**************************************************************************************************
@@ -299,6 +325,43 @@ void usb_handle_control_setup(void)
 */
 void usb_handle_control_out(void)
 {
+	// Check if the setup packet that initiated this OUT transfer was a HID CLASS request
+	if ((usb_setup.bmRequestType & USB_REQTYPE_TYPE_MASK) == USB_REQTYPE_CLASS)
+	{
+		if (usb_setup.bRequest == USB_HIDREQ_SET_REPORT)
+		{
+			uint8_t report_type = usb_setup.wValue >> 8;
+			uint8_t report_id   = usb_setup.wValue & 0xFF;
+			bool success = false;
+
+			switch (report_type)
+			{
+				case USB_HID_REPORT_TYPE_OUTPUT:
+					success = hid_cb_set_report_output(ep0_buf_in, usb_setup.wLength, report_id);
+					if (success)
+						hid_get_report_received_callback();
+					break;
+
+				case USB_HID_REPORT_TYPE_INPUT:
+					success = hid_cb_set_report_input(ep0_buf_in, usb_setup.wLength, report_id);
+					break;
+
+				case USB_HID_REPORT_TYPE_FEATURE:
+					success = hid_cb_set_report_feature(ep0_buf_in, usb_setup.wLength, report_id);
+					break;
+			}
+
+			if (success)
+			{
+				// Send Zero-Length Packet (ZLP) IN to acknowledge STATUS phase
+				usb_ep0_in(0);
+			}
+			else
+			{
+				usb_ep0_stall();
+			}
+		}
+	}
 }
 
 /**************************************************************************************************
