@@ -49,6 +49,7 @@
 * DFU (Device Firmware Update) run-time interface
 */
 #define USB_DFU_RUNTIME
+#define USB_DFU_RUNTIME_NAME	"Example DFU Runtime"
 
 extern void	CCPWrite(volatile uint8_t *address, uint8_t value);
 static inline void dfu_cb_enter_dfu_mode(void)
@@ -57,6 +58,7 @@ static inline void dfu_cb_enter_dfu_mode(void)
 	// watchdog reset gives USB time to send response
 	asm("wdr");
 	CCPWrite(&WDT.CTRL, WDT_WPER_128CLK_gc | WDT_ENABLE_bm | WDT_WCEN_bm);
+	// ensure app does not reset watchdog after this
 }
 
 

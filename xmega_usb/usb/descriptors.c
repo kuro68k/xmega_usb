@@ -218,9 +218,9 @@ _Static_assert(sizeof(product_string) <= USB_EP0_BUFFER_SIZE, "Language string e
 
 #ifdef USB_DFU_RUNTIME
 const __flash USB_StringDescriptor_t dfu_runtime_string = {
-	.bLength = USB_STRING_LEN("Runtime"),
+	.bLength = USB_STRING_LEN(USB_DFU_RUNTIME_NAME),
 	.bDescriptorType = USB_DTYPE_String,
-	.bString = u"Runtime"
+	.bString = USTRING(USB_DFU_RUNTIME_NAME)
 };
 _Static_assert(sizeof(dfu_runtime_string) <= USB_EP0_BUFFER_SIZE, "DFU runtime string exceeds EP0 buffer size");
 #endif // USB_DFU_RUNTIME
@@ -251,7 +251,7 @@ void generate_serial(void)
 {
 	USB_StringDescriptor_t *serial_string = (USB_StringDescriptor_t *)ep0_buf_in;
 	serial_string->bDescriptorType = USB_DTYPE_String;
-	serial_string->bLength = 22*2;
+	serial_string->bLength = USB_STRING_LEN("0000000000000000000000");
 
 	__CHAR16_TYPE__ *c = (__CHAR16_TYPE__ *)&serial_string->bString;
 	uint8_t idx = offsetof(NVM_PROD_SIGNATURES_t, LOTNUM0);
